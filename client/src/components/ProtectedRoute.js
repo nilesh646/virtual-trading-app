@@ -3,7 +3,10 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { token } = useContext(AuthContext);
+  const { token, loading } = useContext(AuthContext);
+
+  if (loading) return null; // or a spinner
+
   return token ? children : <Navigate to="/login" />;
 };
 
