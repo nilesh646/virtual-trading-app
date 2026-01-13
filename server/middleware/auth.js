@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken");
 
-module.exports = function (req, res, next) {
+const authMiddleware = (req, res, next) => {
   try {
     const authHeader = req.header("Authorization");
+
     if (!authHeader) {
       return res.status(401).json({ error: "No token provided" });
     }
@@ -14,7 +15,7 @@ module.exports = function (req, res, next) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ FIX
+    // ✅ store user id
     req.user = decoded.id;
 
     next();
