@@ -9,11 +9,9 @@ import PriceChart from "../components/PriceChart";
 import PortfolioChart from "../components/PortfolioChart";
 import Analytics from "../components/Analytics";
 
-const [prices, setPrices] = useState({});
-
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
-  const [wallet, setWallet] = useState(null);
+  const [wallet, setWallet] = useState(null); // ✅ INSIDE COMPONENT
 
   const loadWallet = async () => {
     try {
@@ -23,28 +21,12 @@ const Dashboard = () => {
       console.error("Wallet fetch failed", err);
     }
   };
-  
-    const loadPrices = async () => {
-    try {
-      const res = await api.get("/api/market");
-
-      const priceMap = {};
-      res.data.forEach(stock => {
-        priceMap[stock.symbol] = stock.price;
-      });
-
-      setPrices(priceMap);
-    } catch (err) {
-      console.error("Price fetch failed", err);
-    }
-  };
-
 
   useEffect(() => {
-    if (!token) return;
-    loadWallet();
+    if (token) {
+      loadWallet();
+    }
   }, [token]);
-
 
   return (
     <div className="container">
@@ -74,7 +56,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card">
-            <Portfolio holdings={wallet.holdings} prices={prices} />
+            <Portfolio holdings={wallet.holdings} />
           </div>
 
           <div className="card">
@@ -82,7 +64,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card">
-            <Portfolio holdings={wallet.holdings} prices={prices} />
+            <PortfolioChart holdings={wallet.holdings} />
           </div>
 
           <div className="card">
