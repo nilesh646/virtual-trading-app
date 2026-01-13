@@ -40,10 +40,10 @@ const Dashboard = () => {
   };
 
 
-useEffect(() => {
-  if (!token) return;
-  loadWallet();
-}, [token]);
+  useEffect(() => {
+    if (!token) return;
+    loadWallet();
+  }, [token]);
 
 
   return (
