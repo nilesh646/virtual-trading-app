@@ -9,25 +9,49 @@ import PriceChart from "../components/PriceChart";
 import PortfolioChart from "../components/PortfolioChart";
 import Analytics from "../components/Analytics";
 
+const [prices, setPrices] = useState({});
 
 const Dashboard = () => {
-  const { logout } = useContext(AuthContext);
+  const { logout, token } = useContext(AuthContext);
   const [wallet, setWallet] = useState(null);
 
-  const loadWallet = () => {
-    api.get("/api/wallet").then(res => setWallet(res.data));
+  const loadWallet = async () => {
+    try {
+      const res = await api.get("/api/wallet");
+      setWallet(res.data);
+    } catch (err) {
+      console.error("Wallet fetch failed", err);
+    }
+  };
+  
+    const loadPrices = async () => {
+    try {
+      const res = await api.get("/api/market");
+
+      const priceMap = {};
+      res.data.forEach(stock => {
+        priceMap[stock.symbol] = stock.price;
+      });
+
+      setPrices(priceMap);
+    } catch (err) {
+      console.error("Price fetch failed", err);
+    }
   };
 
-  useEffect(() => {
-    loadWallet();
-  }, []);
 
-    return (
+useEffect(() => {
+  if (!token) return;
+  loadWallet();
+}, [token]);
+
+
+  return (
     <div className="container">
       <h2>Trading Dashboard</h2>
       <button onClick={logout}>Logout</button>
 
-      {wallet && (
+      {wallet ? (
         <>
           <div className="card">
             <h3>Account Balance</h3>
@@ -50,7 +74,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card">
-            <Portfolio holdings={wallet.holdings} />
+            <Portfolio holdings={wallet.holdings} prices={prices} />
           </div>
 
           <div className="card">
@@ -58,7 +82,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card">
-            <PortfolioChart holdings={wallet.holdings} />
+            <Portfolio holdings={wallet.holdings} prices={prices} />
           </div>
 
           <div className="card">
@@ -69,6 +93,8 @@ const Dashboard = () => {
             <History />
           </div>
         </>
+      ) : (
+        <p>Loading wallet...</p>
       )}
     </div>
   );

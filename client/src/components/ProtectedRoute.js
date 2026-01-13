@@ -1,20 +1,17 @@
 import { useContext } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { token, loading } = useContext(AuthContext);
-  const location = useLocation();
+  const { token } = useContext(AuthContext);
 
-  // ✅ Wait until auth state is fully loaded
-  if (loading) return null;
-
-  // ✅ Allow public routes
-  if (location.pathname === "/login" || location.pathname === "/register") {
-    return children;
+  // ⏳ wait until token is resolved
+  if (token === undefined) {
+    return <p>Loading...</p>;
   }
 
   return token ? children : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;
+
