@@ -8,8 +8,7 @@ const authMiddleware = (req, res, next) => {
       return res.status(401).json({ error: "No token provided" });
     }
 
-    // Expect: "Bearer <token>"
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1]; // Bearer <token>
 
     if (!token) {
       return res.status(401).json({ error: "Token format invalid" });
@@ -17,10 +16,11 @@ const authMiddleware = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded.user || decoded;
+    // ✅ FIX HERE
+    req.user = decoded.id;
+
     next();
   } catch (err) {
-    console.error("Auth middleware error:", err.message);
     return res.status(401).json({ error: "Token is not valid" });
   }
 };
