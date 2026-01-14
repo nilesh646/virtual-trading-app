@@ -1,14 +1,21 @@
-const Portfolio = ({ holdings, prices }) => {
+const Portfolio = ({ holdings = [], prices = {} }) => {
   let totalPL = 0;
+
+  if (!Array.isArray(holdings) || holdings.length === 0) {
+    return (
+      <div>
+        <h3>Portfolio</h3>
+        <p>No holdings</p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <h3>Portfolio</h3>
 
-      {holdings.length === 0 && <p>No holdings</p>}
-
-      {holdings.map(h => {
-        const currentPrice = prices[h.symbol] || 0;
+      {holdings.map((h) => {
+        const currentPrice = prices?.[h.symbol] ?? h.avgPrice;
         const invested = h.quantity * h.avgPrice;
         const current = h.quantity * currentPrice;
         const pl = current - invested;
