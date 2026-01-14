@@ -111,7 +111,12 @@ const Dashboard = () => {
             <Portfolio
               holdings={wallet.holdings}
               prices={prices}
+              refresh={async () => {
+                await loadWallet();
+                await loadPrices();
+              }}
             />
+
           </div>
 
           {/* 📉 Live Price Chart */}
