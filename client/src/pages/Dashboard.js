@@ -19,7 +19,7 @@ const Dashboard = () => {
   // 🔹 Load wallet
   const loadWallet = async () => {
     try {
-      const res = await api.get("/api/wallet");
+      const res = await api.get("/api/wallet/");
       setWallet(res.data);
     } catch (err) {
       console.error("Wallet fetch failed", err);
@@ -47,14 +47,15 @@ const Dashboard = () => {
 
   // 🔹 Initial load + auto refresh prices
   useEffect(() => {
-    if (token) {
-      loadWallet();
-      loadPrices();
+    if (!token) return;
 
-      const interval = setInterval(loadPrices, 5000);
-      return () => clearInterval(interval);
-    }
+    loadWallet();
+    loadPrices();
+
+    const interval = setInterval(loadPrices, 5000);
+    return () => clearInterval(interval);
   }, [token]);
+
 
   return (
     <div className="container">
