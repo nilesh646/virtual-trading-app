@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useState } from "react";
 
 const Market = ({ prices, onBuy }) => {
+  const [loading, setLoading] = useState(false);
+
   return (
     <div>
       <h3>Market</h3>
@@ -9,7 +10,16 @@ const Market = ({ prices, onBuy }) => {
       {Object.keys(prices).map(symbol => (
         <div key={symbol}>
           {symbol} - ₹{prices[symbol]}
-          <button onClick={() => onBuy(symbol)}>Buy</button>
+          <button
+            disabled={loading}
+            onClick={async () => {
+              setLoading(true);
+              await onBuy(symbol);
+              setLoading(false);
+            }}
+          >
+            {loading ? "Processing..." : "Buy"}
+          </button>
         </div>
       ))}
     </div>

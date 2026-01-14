@@ -15,6 +15,15 @@ import {
   Legend
 } from "chart.js";
 
+import { Toaster } from "react-hot-toast";
+
+root.render(
+  <AuthProvider>
+    <App />
+    <Toaster position="top-right" />
+  </AuthProvider>
+);
+
 ChartJS.register(
   CategoryScale,
   LinearScale,

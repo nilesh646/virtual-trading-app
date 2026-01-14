@@ -2,21 +2,24 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 
 const History = () => {
-  const [page, setPage] = useState(1);
-  const [data, setData] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`/api/history?page=${page}&limit=5`)
-      .then(res => setData(res.data));
-  }, [page]);
+    api.get("/api/history")
+      .then(res => setHistory(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
 
-  if (!data) return <p>Loading history...</p>;
+  if (loading) return <p>Loading trade history...</p>;
+
+  if (!history.length) return <p>No trades yet</p>;
 
   return (
     <div>
-      <h3>Order History</h3>
-
-      <table>
+      <h3>Trade History</h3>
+      <table width="100%" border="1" cellPadding="6">
         <thead>
           <tr>
             <th>Type</th>
@@ -27,9 +30,11 @@ const History = () => {
           </tr>
         </thead>
         <tbody>
-          {data.trades.map((t, i) => (
+          {history.map((t, i) => (
             <tr key={i}>
-              <td>{t.type}</td>
+              <td style={{ color: t.type === "BUY" ? "green" : "red" }}>
+                {t.type}
+              </td>
               <td>{t.symbol}</td>
               <td>{t.quantity}</td>
               <td>₹{t.price}</td>
@@ -38,20 +43,6 @@ const History = () => {
           ))}
         </tbody>
       </table>
-
-      <button
-        disabled={page === 1}
-        onClick={() => setPage(p => p - 1)}
-      >
-        Prev
-      </button>
-
-      <button
-        disabled={page === data.totalPages}
-        onClick={() => setPage(p => p + 1)}
-      >
-        Next
-      </button>
     </div>
   );
 };
