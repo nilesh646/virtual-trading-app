@@ -1,9 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import "./styles.css";
 import App from "./App";
+import "./styles.css";
 import { AuthProvider } from "./context/AuthContext";
+import { Toaster } from "react-hot-toast";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,15 +15,6 @@ import {
   Tooltip,
   Legend
 } from "chart.js";
-
-import { Toaster } from "react-hot-toast";
-
-root.render(
-  <AuthProvider>
-    <App />
-    <Toaster position="top-right" />
-  </AuthProvider>
-);
 
 ChartJS.register(
   CategoryScale,
@@ -35,12 +27,14 @@ ChartJS.register(
 );
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
-  <BrowserRouter>
+  <React.StrictMode>
     <AuthProvider>
       <App />
+      <Toaster position="top-right" />
     </AuthProvider>
-  </BrowserRouter>
+  </React.StrictMode>
 );
 
 
