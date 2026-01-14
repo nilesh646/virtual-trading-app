@@ -11,7 +11,9 @@ import Analytics from "../components/Analytics";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
-  const [wallet, setWallet] = useState(null); // ✅ INSIDE COMPONENT
+
+  const [wallet, setWallet] = useState(null);
+  const [prices, setPrices] = useState({}); // 🔥 NEW
 
   const loadWallet = async () => {
     try {
@@ -22,9 +24,29 @@ const Dashboard = () => {
     }
   };
 
+  const loadPrices = async () => {
+    try {
+      const res = await api.get("/api/market");
+
+      // 🔥 Convert array → object
+      const priceMap = {};
+      res.data.forEach(item => {
+        priceMap[item.symbol] = item.price;
+      });
+
+      setPrices(priceMap);
+    } catch (err) {
+      console.error("Price fetch failed", err);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       loadWallet();
+      loadPrices();
+
+      const interval = setInterval(loadPrices, 5000);
+      return () => clearInterval(interval);
     }
   }, [token]);
 
@@ -43,10 +65,12 @@ const Dashboard = () => {
           <div className="flex">
             <div className="card" style={{ flex: 1 }}>
               <Market
-                onBuy={(symbol) =>
-                  api.post("/api/trade/buy", { symbol, quantity: 1 })
-                    .then(loadWallet)
-                }
+                prices={prices}   // 🔥 PASS PRICES
+                onBuy={async (symbol) => {
+                  await api.post("/api/trade/buy", { symbol, quantity: 1 });
+                  await loadWallet();
+                  await loadPrices();
+                }}
               />
             </div>
 
@@ -56,11 +80,14 @@ const Dashboard = () => {
           </div>
 
           <div className="card">
-            <Portfolio holdings={wallet.holdings} />
+            <Portfolio
+              holdings={wallet.holdings}
+              prices={prices}   // 🔥 PASS PRICES
+            />
           </div>
 
           <div className="card">
-            <PriceChart symbol="AAPL" prices={[260, 258, 255, 257, 260]} />
+            <PriceChart prices={prices} /> {/* 🔥 LIVE CHART */}
           </div>
 
           <div className="card">

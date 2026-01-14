@@ -1,14 +1,19 @@
 import { Line } from "react-chartjs-2";
 
-const PriceChart = ({ symbol, prices }) => {
+const PriceChart = ({ prices }) => {
+  const labels = Object.keys(prices);
+  const dataPoints = Object.values(prices);
+
+  if (!labels.length) return null;
+
   const data = {
-    labels: prices.map((_, i) => `T-${prices.length - i}`),
+    labels,
     datasets: [
       {
-        label: `${symbol} Price`,
-        data: prices,
+        label: "Live Stock Prices",
+        data: dataPoints,
         borderColor: "blue",
-        fill: false
+        tension: 0.4
       }
     ]
   };

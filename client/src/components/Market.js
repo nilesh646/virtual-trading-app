@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-const Market = ({ onBuy }) => {
-  const [stocks, setStocks] = useState([]);
-
-  useEffect(() => {
-    api.get("/api/market").then(res => setStocks(res.data));
-  }, []);
-
+const Market = ({ prices, onBuy }) => {
   return (
-    <div className="card">
+    <div>
       <h3>Market</h3>
-      {stocks.map(stock => (
-        <div key={stock.symbol}>
-          <span>{stock.symbol} - ₹{stock.price}</span>
-          <button onClick={() => onBuy(stock.symbol)}>Buy</button>
+
+      {Object.keys(prices).map(symbol => (
+        <div key={symbol}>
+          {symbol} - ₹{prices[symbol]}
+          <button onClick={() => onBuy(symbol)}>Buy</button>
         </div>
       ))}
     </div>
