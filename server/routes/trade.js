@@ -44,22 +44,38 @@ router.post("/buy", auth, async (req, res) => {
   }
 });
 
+
 // SELL STOCK
 router.post("/sell", auth, async (req, res) => {
-  const { symbol, quantity } = req.body;
-
   try {
-    const user = await User.findById(req.userId);
-    const stock = user.holdings.find(h => h.symbol === symbol);
+    const { symbol, quantity } = req.body;
 
-    if (!stock || stock.quantity < quantity) {
-      return res.status(400).json({ error: "Not enough shares" });
+    if (!symbol || !quantity) {
+      return res.status(400).json({ error: "Invalid sell request" });
     }
 
-    const price = Math.floor(Math.random() * 100) + 200; // mock price
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const stock = user.holdings.find(h => h.symbol === symbol);
+
+    if (!stock) {
+      return res.status(400).json({ error: "Stock not owned" });
+    }
+
+    if (stock.quantity < quantity) {
+      return res.status(400).json({ error: "Not enough shares to sell" });
+    }
+
+    // Mock price (same as buy)
+    const price = Math.floor(Math.random() * 100) + 200;
     const revenue = price * quantity;
 
     stock.quantity -= quantity;
+
     if (stock.quantity === 0) {
       user.holdings = user.holdings.filter(h => h.symbol !== symbol);
     }
@@ -70,12 +86,15 @@ router.post("/sell", auth, async (req, res) => {
       type: "SELL",
       symbol,
       quantity,
-      price
+      price,
+      date: new Date()
     });
 
     await user.save();
-    res.json({ message: "Stock sold" });
-  } catch {
+
+    res.json({ message: "Stock sold successfully" });
+  } catch (err) {
+    console.error("SELL ERROR:", err.message);
     res.status(500).json({ error: "Server error" });
   }
 });
