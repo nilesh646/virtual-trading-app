@@ -19,13 +19,13 @@ const Dashboard = () => {
   // 🔹 Load wallet
   const loadWallet = async () => {
     try {
-      const res = await api.get("/api/wallet/");
+      const res = await api.get("https://virtual-trading-app-hnd6.onrender.com/api/wallet/");
       setWallet(res.data);
     } catch (err) {
       console.error("Wallet fetch failed", err);
-      toast.error("Failed to load wallet");
     }
   };
+
 
   // 🔹 Load market prices
   const loadPrices = async () => {
