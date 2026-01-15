@@ -19,7 +19,7 @@ const Dashboard = () => {
   // 🔹 Load wallet
   const loadWallet = async () => {
     try {
-      const res = await api.get("https://virtual-trading-app-hnd6.onrender.com/api/wallet/");
+      const res = await api.get("https://virtual-trading-app-kcdu.onrender.com/api/wallet/");
       setWallet(res.data);
     } catch (err) {
       console.error("Wallet fetch failed", err);
