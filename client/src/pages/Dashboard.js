@@ -64,7 +64,7 @@ const Dashboard = () => {
 
     init();
 
-    const interval = setInterval(loadPrices, 5000);
+    const interval = setInterval(loadPrices, 60000);
     return () => clearInterval(interval);
   }, [token]);
 
