@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { getStockPrice } = require("../services/marketService");
 
-const symbols = ["AAPL"];
+const symbols = ["AAPL", "GOOGL", "TSLA", "AMZN"];
 
 router.get("/", async (req, res) => {
   const results = [];

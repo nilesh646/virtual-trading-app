@@ -1,43 +1,22 @@
 const axios = require("axios");
 
-const API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
-
-// Per-symbol cache
-const cache = {};
-const CACHE_DURATION = 60 * 1000; // 1 minute
+const API_KEY = process.env.FINNHUB_API_KEY;
 
 const getStockPrice = async (symbol) => {
-  const now = Date.now();
-
-  // Return cached value if valid
-  if (
-    cache[symbol] &&
-    now - cache[symbol].timestamp < CACHE_DURATION
-  ) {
-    return cache[symbol].data;
-  }
-
   try {
-    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`;
-    const response = await axios.get(url);
+    const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`;
+    const res = await axios.get(url);
 
-    const quote = response.data["Global Quote"];
-    if (!quote || !quote["05. price"]) return null;
+    // Finnhub returns current price as "c"
+    if (!res.data || !res.data.c) return null;
 
-    const stock = {
+    return {
       symbol,
-      price: parseFloat(quote["05. price"]),
+      price: res.data.c
     };
-
-    cache[symbol] = {
-      data: stock,
-      timestamp: now,
-    };
-
-    return stock;
-  } catch (error) {
-    console.error("Market API error:", error.message);
-    return cache[symbol]?.data || null;
+  } catch (err) {
+    console.error("Finnhub error:", err.message);
+    return null;
   }
 };
 
