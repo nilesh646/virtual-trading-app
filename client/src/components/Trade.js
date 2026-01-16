@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../api/axios";
+import toast from "react-hot-toast"; 
 
 const Trade = ({ refreshWallet }) => {
   const [symbol, setSymbol] = useState("");
