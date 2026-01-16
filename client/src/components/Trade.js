@@ -11,9 +11,18 @@ const Trade = ({ refreshWallet }) => {
   };
 
   const sell = async () => {
-    await api.post("/api/trade/sell", { symbol, quantity });
+  try {
+    await api.post("/api/trade/sell", {
+      symbol,
+      quantity: Number(quantity)
+    });
+    toast.success("Sell successful");
     refreshWallet();
+  } catch (err) {
+    toast.error(err.response?.data?.error || "Sell failed");
+  }
   };
+
 
   return (
     <div className="card">

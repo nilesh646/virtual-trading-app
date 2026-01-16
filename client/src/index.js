@@ -37,6 +37,13 @@ root.render(
   </React.StrictMode>
 );
 
+root.render(
+  <AuthProvider>
+    <App />
+    <Toaster position="top-right" />
+  </AuthProvider>
+);
+
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
