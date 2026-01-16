@@ -17,32 +17,41 @@ const Dashboard = () => {
   const [prices, setPrices] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Load wallet
+  // -------------------------
+  // Load Wallet
+  // -------------------------
   const loadWallet = async () => {
     try {
       const res = await api.get("/api/wallet");
       setWallet(res.data);
     } catch (err) {
-      console.error("Wallet fetch failed:", err);
+      console.error("Wallet fetch failed", err);
       setWallet(null);
     }
   };
 
-  // 🔹 Load market prices
+  // -------------------------
+  // Load Market Prices
+  // -------------------------
   const loadPrices = async () => {
     try {
       const res = await api.get("/api/market");
-      const priceMap = {};
-      res.data.forEach(item => {
-        priceMap[item.symbol] = item.price;
+
+      const map = {};
+      res.data.forEach(stock => {
+        map[stock.symbol] = stock.price;
       });
-      setPrices(priceMap);
+
+      setPrices(map);
     } catch (err) {
-      console.error("Price fetch failed:", err);
+      console.error("Market fetch failed", err);
+      setPrices({});
     }
   };
 
-  // 🔹 Initial load after token is ready
+  // -------------------------
+  // Initial Load
+  // -------------------------
   useEffect(() => {
     if (!token) return;
 
@@ -59,13 +68,15 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, [token]);
 
+  // -------------------------
+  // UI
+  // -------------------------
   if (loading) {
-    return (
-      <div className="container">
-        <h2>Trading Dashboard</h2>
-        <p>Loading dashboard...</p>
-      </div>
-    );
+    return <p style={{ padding: 20 }}>Loading dashboard...</p>;
+  }
+
+  if (!wallet) {
+    return <p style={{ padding: 20 }}>Failed to load wallet</p>;
   }
 
   return (
@@ -73,65 +84,63 @@ const Dashboard = () => {
       <h2>Trading Dashboard</h2>
       <button onClick={logout}>Logout</button>
 
-      {!wallet ? (
-        <p>Failed to load wallet</p>
-      ) : (
-        <>
-          {/* Balance */}
-          <div className="card">
-            <h3>Account Balance</h3>
-            <p>₹{wallet.balance}</p>
-          </div>
+      {/* Balance */}
+      <div className="card">
+        <h3>Account Balance</h3>
+        <p>₹{wallet.balance}</p>
+      </div>
 
-          {/* Market + Trade */}
-          <div className="flex">
-            <div className="card" style={{ flex: 1 }}>
-              <Market
-                prices={prices}
-                onBuy={async (symbol) => {
-                  await api.post("/api/trade/buy", {
-                    symbol,
-                    quantity: 1
-                  });
-                  await loadWallet();
-                  await loadPrices();
-                }}
-              />
-            </div>
+      {/* Market + Trade */}
+      <div className="flex">
+        <div className="card" style={{ flex: 1 }}>
+          <Market
+            prices={prices}
+            onBuy={async (symbol) => {
+              await api.post("/api/trade/buy", {
+                symbol,
+                quantity: 1
+              });
+              await loadWallet();
+            }}
+          />
+        </div>
 
-            <div className="card" style={{ flex: 1 }}>
-              <Trade refreshWallet={loadWallet} />
-            </div>
-          </div>
+        <div className="card" style={{ flex: 1 }}>
+          <Trade refreshWallet={loadWallet} />
+        </div>
+      </div>
 
-          {/* Portfolio */}
-          <div className="card">
-            <Portfolio
-              holdings={wallet.holdings || []}
-              prices={prices}
-            />
-          </div>
+      {/* Portfolio */}
+      <div className="card">
+        <Portfolio
+          holdings={wallet.holdings || []}
+          prices={prices}
+        />
+      </div>
 
-          {/* Charts */}
-          <div className="card">
-            <PriceChart prices={prices} />
-          </div>
+      {/* Price Chart */}
+      <div className="card">
+        {Object.keys(prices).length > 0 ? (
+          <PriceChart prices={prices} />
+        ) : (
+          <p>No market data yet</p>
+        )}
+      </div>
 
-          <div className="card">
-            <PortfolioChart holdings={wallet.holdings || []} />
-          </div>
+      {/* Portfolio Chart */}
+      <div className="card">
+        <PortfolioChart holdings={wallet.holdings || []} />
+      </div>
 
-          {/* Analytics */}
-          <div className="card">
-            <Analytics />
-          </div>
+      {/* Analytics */}
+      <div className="card">
+        <Analytics />
+      </div>
 
-          {/* History */}
-          <div className="card">
-            <History />
-          </div>
-        </>
-      )}
+      {/* History */}
+      <div className="card">
+        <History />
+      </div>
     </div>
   );
 };
