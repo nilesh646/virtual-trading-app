@@ -7,24 +7,21 @@ const getStockPrice = async (symbol) => {
     const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`;
     const res = await axios.get(url);
 
-    // Finnhub returns current price as "c"
-    if (!res.data || !res.data.c) return null;
+    if (!res.data || typeof res.data.c !== "number") {
+      return null;
+    }
+
+    // 🔥 Simulated fluctuation for demo realism
+    const fluctuation = (Math.random() - 0.5) * 2; // -1 to +1
 
     return {
       symbol,
-      price: res.data.c
+      price: Number((res.data.c + fluctuation).toFixed(2))
     };
   } catch (err) {
     console.error("Finnhub error:", err.message);
     return null;
   }
 };
-
-const fluctuation = (Math.random() - 0.5) * 2; // -1 to +1
-const stock = {
-  symbol,
-  price: parseFloat(quote["05. price"]) + fluctuation
-};
-
 
 module.exports = { getStockPrice };
