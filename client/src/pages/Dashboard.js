@@ -91,7 +91,11 @@ const Dashboard = () => {
       </div>
 
       <div className="card">
-        <Portfolio holdings={wallet.holdings} prices={prices} />
+        <Portfolio
+          holdings={wallet.holdings}
+          prices={prices}
+          refreshWallet={loadWallet}
+        />
       </div>
 
       <div className="card">

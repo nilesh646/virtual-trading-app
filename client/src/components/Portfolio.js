@@ -1,58 +1,62 @@
 import api from "../api/axios";
 import toast from "react-hot-toast";
 
-const Portfolio = ({ holdings = [], prices = {}, refresh }) => {
-  if (!holdings.length) return <p>No holdings</p>;
+const Portfolio = ({ holdings, prices, refreshWallet }) => {
+  let totalPL = 0;
+
+  if (!holdings || holdings.length === 0) {
+    return <p>No holdings</p>;
+  }
+
+  const sellOne = async (symbol) => {
+    try {
+      await api.post("/api/trade/sell", { symbol, quantity: 1 });
+      toast.success("Stock sold");
+      refreshWallet(); // ✅ now defined
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Sell failed");
+    }
+  };
 
   return (
     <div>
       <h3>Portfolio</h3>
 
-      {holdings.map(h => (
-        <div key={h.symbol}>
-          <strong>{h.symbol}</strong><br />
-          Qty: {h.quantity}<br />
-          Avg Price: ₹{h.avgPrice}<br />
-          Current Price: ₹{prices[h.symbol] ?? h.avgPrice}<br />
+      {holdings.map((h) => {
+        const currentPrice = prices?.[h.symbol] || 0;
+        const invested = h.quantity * h.avgPrice;
+        const current = h.quantity * currentPrice;
+        const pl = current - invested;
 
-          <button
-            onClick={async () => {
-              try {
-                await api.post("/api/trade/sell", {
-                  symbol: h.symbol,
-                  quantity: 1
-                });
-                toast.success(`Sold 1 ${h.symbol}`);
-                refresh();
-              } catch (err) {
-                toast.error(err.response?.data?.error || "Sell failed");
-              }
-            }}
-          >
-            Sell 1
-          </button>
-          <button
-            onClick={() =>
-              api.post("/api/trade/sell", { symbol: h.symbol, quantity: 1 })
-                .then(refreshWallet)
-            }
-          >
-            Sell 1
-          </button>
+        totalPL += pl;
 
-          <button
-            disabled={h.quantity === 0}
-            onClick={() =>
-              api.post("/api/trade/sell", { symbol: h.symbol, quantity: 1 })
-                .then(refreshWallet)
-            }
-          >
-            Sell 1
-          </button>
+        return (
+          <div key={h.symbol}>
+            <strong>{h.symbol}</strong><br />
+            Qty: {h.quantity}<br />
+            Avg Price: ₹{h.avgPrice}<br />
+            Current Price: ₹{currentPrice}<br />
 
-          <hr />
-        </div>
-      ))}
+            <span style={{ color: pl >= 0 ? "green" : "red" }}>
+              P/L: ₹{pl.toFixed(2)}
+            </span>
+            <br />
+
+            <button
+              disabled={h.quantity === 0}
+              onClick={() => sellOne(h.symbol)}
+            >
+              Sell 1
+            </button>
+
+            <hr />
+          </div>
+        );
+      })}
+
+      <h4 style={{ color: totalPL >= 0 ? "green" : "red" }}>
+        Total P/L: ₹{totalPL.toFixed(2)}
+      </h4>
     </div>
   );
 };

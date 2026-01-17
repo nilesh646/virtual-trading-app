@@ -1,4 +1,6 @@
-import { useState } from "react";
+// REMOVE useState if not used
+import React from "react";
+
 
 const Market = ({ prices, onBuy, balance }) => {
   return (
