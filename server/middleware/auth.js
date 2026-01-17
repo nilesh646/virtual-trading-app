@@ -1,27 +1,27 @@
 const jwt = require("jsonwebtoken");
 
-const authMiddleware = (req, res, next) => {
+module.exports = function (req, res, next) {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.header("Authorization");
+    console.log("AUTH HEADER:", authHeader);
 
     if (!authHeader) {
       return res.status(401).json({ error: "No token provided" });
     }
 
     const token = authHeader.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ error: "Token format invalid" });
-    }
+    console.log("RAW TOKEN:", token);
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("DECODED TOKEN:", decoded);
 
-    req.user = decoded.id; // 🔥 MUST MATCH LOGIN PAYLOAD
+    req.userId = decoded.id;
+    console.log("USER ID SET TO:", req.userId);
+
     next();
   } catch (err) {
     console.error("JWT ERROR:", err.message);
     return res.status(401).json({ error: "Token is not valid" });
   }
 };
-
-module.exports = authMiddleware;
 
