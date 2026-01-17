@@ -4,61 +4,66 @@ const auth = require("../middleware/auth");
 const User = require("../models/User");
 const { getStockPrice } = require("../services/marketService");
 
+
 // BUY
 router.post("/buy", auth, async (req, res) => {
   try {
-    console.log("REQ.USERID:", req.userId);
+    const { symbol, quantity } = req.body;
 
     const user = await User.findById(req.userId);
-    console.log("USER FOUND:", user);
-
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // continue normally...
+    // 🔥 FETCH STOCK FIRST
+    const stock = await getStockPrice(symbol);
+    if (!stock) {
+      return res.status(400).json({ error: "Stock price unavailable" });
+    }
 
-
-    const cost = stock.price * quantity;
+    const price = stock.price;
+    const cost = price * quantity;
 
     if (user.balance < cost) {
       return res.status(400).json({ error: "Insufficient balance" });
     }
 
-    // 🔁 Check if already holding
+    // 🔥 UPDATE WALLET
+    user.balance -= cost;
+
     const holding = user.holdings.find(h => h.symbol === symbol);
 
     if (holding) {
-      const totalQty = holding.quantity + quantity;
       holding.avgPrice =
-        (holding.avgPrice * holding.quantity + stock.price * quantity) /
-        totalQty;
-      holding.quantity = totalQty;
+        (holding.avgPrice * holding.quantity + price * quantity) /
+        (holding.quantity + quantity);
+      holding.quantity += quantity;
     } else {
       user.holdings.push({
         symbol,
         quantity,
-        avgPrice: stock.price
+        avgPrice: price
       });
     }
 
-    user.balance -= cost;
-
+    // 🔥 SAVE HISTORY
     user.tradeHistory.push({
       type: "BUY",
       symbol,
       quantity,
-      price: stock.price
+      price
     });
 
     await user.save();
 
-    res.json({ message: "Buy successful" });
+    res.json({ message: "Stock bought successfully" });
   } catch (err) {
     console.error("BUY ERROR:", err.message);
     res.status(500).json({ error: "Server error" });
   }
 });
+
+
 
 
 // SELL

@@ -4,25 +4,18 @@ const auth = require("../middleware/auth");
 const User = require("../models/User");
 
 router.get("/", auth, async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 5;
+  try {
+    const user = await User.findById(req.userId);
 
-  const user = await User.findById(req.user);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-  const total = user.tradeHistory.length;
-  const start = total - page * limit;
-  const end = start + limit;
-
-  const trades = user.tradeHistory
-    .slice(Math.max(0, start), end)
-    .reverse();
-
-  res.json({
-    trades,
-    total,
-    page,
-    totalPages: Math.ceil(total / limit)
-  });
+    res.json(user.tradeHistory);
+  } catch (err) {
+    console.error("HISTORY ERROR:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 module.exports = router;
