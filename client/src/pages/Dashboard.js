@@ -1,6 +1,8 @@
 import { useEffect, useState, useContext } from "react";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import { useEffect, useState, useContext, useCallback } from "react";
+
 
 import Market from "../components/Market";
 import Trade from "../components/Trade";
@@ -20,18 +22,19 @@ const Dashboard = () => {
   // -------------------------
   // Load Wallet
   // -------------------------
-    const loadWallet = async () => {
+   const loadWallet = useCallback(async () => {
     try {
       const res = await api.get("/api/wallet");
       setWallet(res.data);
     } catch (err) {
       if (err.response?.status === 401) {
-        logout(); // 🔥 auto logout on expired token
+        logout();
       } else {
         console.error("Wallet fetch failed", err);
       }
     }
-  };
+  }, [logout]);
+
 
 
   // -------------------------
