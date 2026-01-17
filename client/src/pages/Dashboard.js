@@ -20,15 +20,19 @@ const Dashboard = () => {
   // -------------------------
   // Load Wallet
   // -------------------------
-  const loadWallet = async () => {
+    const loadWallet = async () => {
     try {
       const res = await api.get("/api/wallet");
       setWallet(res.data);
     } catch (err) {
-      console.error("Wallet fetch failed", err);
-      setWallet(null);
+      if (err.response?.status === 401) {
+        logout(); // 🔥 auto logout on expired token
+      } else {
+        console.error("Wallet fetch failed", err);
+      }
     }
   };
+
 
   // -------------------------
   // Load Market Prices
