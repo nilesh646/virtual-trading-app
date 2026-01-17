@@ -20,30 +20,28 @@ const History = () => {
     loadHistory();
   }, []);
 
-  if (loading) {
-    return <p>Loading trade history...</p>;
-  }
+  if (loading) return <p>Loading trade history...</p>;
+  if (!history.length) return <p>No trades yet</p>;
 
-  if (history.length === 0) {
-    return <p>No trades yet</p>;
-  }
-
-  // 🔥 REALIZED P/L (only SELL trades)
-  const totalRealizedPL = history
-    .filter(trade => trade.type === "SELL")
-    .reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+  // ✅ SAFE realized P/L calculation
+  const totalRealizedPL = history.reduce((sum, trade) => {
+    if (trade.type === "SELL" && typeof trade.pnl === "number") {
+      return sum + trade.pnl;
+    }
+    return sum;
+  }, 0);
 
   return (
     <div>
       <h3>Order History</h3>
 
       {history.map((trade, index) => (
-        <div key={index} style={{ marginBottom: "10px" }}>
+        <div key={index}>
           <strong>{trade.type}</strong> — {trade.symbol}<br />
           Qty: {trade.quantity}<br />
           Price: ₹{trade.price}<br />
 
-          {trade.type === "SELL" && (
+          {trade.type === "SELL" && typeof trade.pnl === "number" && (
             <span
               style={{
                 color: trade.pnl >= 0 ? "green" : "red",
@@ -60,12 +58,7 @@ const History = () => {
         </div>
       ))}
 
-      <h4
-        style={{
-          color: totalRealizedPL >= 0 ? "green" : "red",
-          marginTop: "15px"
-        }}
-      >
+      <h4 style={{ color: totalRealizedPL >= 0 ? "green" : "red" }}>
         Total Realized P/L: ₹{totalRealizedPL.toFixed(2)}
       </h4>
     </div>
