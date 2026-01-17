@@ -8,30 +8,21 @@ const Analytics = () => {
     api.get("/api/analytics").then(res => setData(res.data));
   }, []);
 
-  if (!data) return null;
+  if (!data) return <p>Loading analytics...</p>;
 
   return (
     <div>
-      <h3>Portfolio Analytics</h3>
-
-      <p><strong>Cash Balance:</strong> ₹{data.balance}</p>
-      <p><strong>Total Invested:</strong> ₹{data.totalInvested}</p>
-      <p><strong>Total Portfolio Value:</strong> ₹{data.totalValue}</p>
-
-      <p style={{ color: data.totalPnL >= 0 ? "green" : "red" }}>
-        <strong>Total P/L:</strong> ₹{data.totalPnL}
+      <h3>Trading Analytics</h3>
+      <p>Total Invested: ₹{data.totalInvested}</p>
+      <p>Total Sold: ₹{data.totalSold}</p>
+      <p>
+        Net P/L:{" "}
+        <span style={{ color: data.netPL >= 0 ? "green" : "red" }}>
+          ₹{data.netPL}
+        </span>
       </p>
-
-      <h4>Per-Stock Breakdown</h4>
-      {data.breakdown.map((b, i) => (
-        <div key={i}>
-          {b.symbol} | Qty: {b.quantity} | Avg: ₹{b.avgPrice} |
-          Live: ₹{b.currentPrice} |
-          <span style={{ color: b.pnl >= 0 ? "green" : "red" }}>
-            P/L: ₹{b.pnl}
-          </span>
-        </div>
-      ))}
+      <p>Buys: {data.buyCount}</p>
+      <p>Sells: {data.sellCount}</p>
     </div>
   );
 };
