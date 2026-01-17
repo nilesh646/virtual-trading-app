@@ -4,7 +4,7 @@ const api = axios.create({
   baseURL: "https://virtual-trading-app-kcdu.onrender.com",
 });
 
-api.interceptors.request.use(config => {
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -12,7 +12,6 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-// 🔥 AUTO HANDLE EXPIRED TOKEN
 api.interceptors.response.use(
   res => res,
   err => {
@@ -25,6 +24,7 @@ api.interceptors.response.use(
 );
 
 export default api;
+
 
 
 

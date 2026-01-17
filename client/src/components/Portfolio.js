@@ -31,6 +31,24 @@ const Portfolio = ({ holdings = [], prices = {}, refresh }) => {
           >
             Sell 1
           </button>
+          <button
+            onClick={() =>
+              api.post("/api/trade/sell", { symbol: h.symbol, quantity: 1 })
+                .then(refreshWallet)
+            }
+          >
+            Sell 1
+          </button>
+
+          <button
+            disabled={h.quantity === 0}
+            onClick={() =>
+              api.post("/api/trade/sell", { symbol: h.symbol, quantity: 1 })
+                .then(refreshWallet)
+            }
+          >
+            Sell 1
+          </button>
 
           <hr />
         </div>

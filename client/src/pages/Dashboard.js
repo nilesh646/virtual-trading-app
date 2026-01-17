@@ -76,9 +76,11 @@ const Dashboard = () => {
         <div className="card" style={{ flex: 1 }}>
           <Market
             prices={prices}
+            balance={wallet.balance}
             onBuy={async (symbol) => {
               await api.post("/api/trade/buy", { symbol, quantity: 1 });
               await loadWallet();
+              await loadPrices();
             }}
           />
         </div>

@@ -1,27 +1,29 @@
 import { useState } from "react";
 
-const Market = ({ prices, onBuy }) => {
-  const [loading, setLoading] = useState(false);
-
+const Market = ({ prices, onBuy, balance }) => {
   return (
     <div>
       <h3>Market</h3>
 
-      {Object.keys(prices).map(symbol => (
-        <div key={symbol}>
-          {symbol} - ₹{prices[symbol]}
-          <button
-            disabled={loading}
-            onClick={async () => {
-              setLoading(true);
-              await onBuy(symbol);
-              setLoading(false);
-            }}
-          >
-            {loading ? "Processing..." : "Buy"}
-          </button>
-        </div>
-      ))}
+      {Object.keys(prices).length === 0 && <p>Loading prices...</p>}
+
+      {Object.entries(prices).map(([symbol, price]) => {
+        const canBuy = balance >= price;
+
+        return (
+          <div key={symbol}>
+            <strong>{symbol}</strong> – ₹{price}
+            <br />
+            <button
+              disabled={!canBuy}
+              onClick={() => onBuy(symbol)}
+            >
+              {canBuy ? "Buy 1" : "Insufficient Balance"}
+            </button>
+            <hr />
+          </div>
+        );
+      })}
     </div>
   );
 };
