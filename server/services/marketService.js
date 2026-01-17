@@ -20,4 +20,11 @@ const getStockPrice = async (symbol) => {
   }
 };
 
+const fluctuation = (Math.random() - 0.5) * 2; // -1 to +1
+const stock = {
+  symbol,
+  price: parseFloat(quote["05. price"]) + fluctuation
+};
+
+
 module.exports = { getStockPrice };
