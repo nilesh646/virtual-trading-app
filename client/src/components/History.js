@@ -6,43 +6,68 @@ const History = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/api/history")
-      .then(res => setHistory(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+    const loadHistory = async () => {
+      try {
+        const res = await api.get("/api/history");
+        setHistory(res.data || []);
+      } catch (err) {
+        console.error("Failed to load history", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistory();
   }, []);
 
-  if (loading) return <p>Loading trade history...</p>;
+  if (loading) {
+    return <p>Loading trade history...</p>;
+  }
 
-  if (!history.length) return <p>No trades yet</p>;
+  if (history.length === 0) {
+    return <p>No trades yet</p>;
+  }
+
+  // 🔥 REALIZED P/L (only SELL trades)
+  const totalRealizedPL = history
+    .filter(trade => trade.type === "SELL")
+    .reduce((sum, trade) => sum + (trade.pnl || 0), 0);
 
   return (
     <div>
-      <h3>Trade History</h3>
-      <table width="100%" border="1" cellPadding="6">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Symbol</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.map((t, i) => (
-            <tr key={i}>
-              <td style={{ color: t.type === "BUY" ? "green" : "red" }}>
-                {t.type}
-              </td>
-              <td>{t.symbol}</td>
-              <td>{t.quantity}</td>
-              <td>₹{t.price}</td>
-              <td>{new Date(t.date).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h3>Order History</h3>
+
+      {history.map((trade, index) => (
+        <div key={index} style={{ marginBottom: "10px" }}>
+          <strong>{trade.type}</strong> — {trade.symbol}<br />
+          Qty: {trade.quantity}<br />
+          Price: ₹{trade.price}<br />
+
+          {trade.type === "SELL" && (
+            <span
+              style={{
+                color: trade.pnl >= 0 ? "green" : "red",
+                fontWeight: "bold"
+              }}
+            >
+              Realized P/L: ₹{trade.pnl.toFixed(2)}
+            </span>
+          )}
+
+          <br />
+          <small>{new Date(trade.date).toLocaleString()}</small>
+          <hr />
+        </div>
+      ))}
+
+      <h4
+        style={{
+          color: totalRealizedPL >= 0 ? "green" : "red",
+          marginTop: "15px"
+        }}
+      >
+        Total Realized P/L: ₹{totalRealizedPL.toFixed(2)}
+      </h4>
     </div>
   );
 };
