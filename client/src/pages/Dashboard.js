@@ -60,20 +60,15 @@ const Dashboard = () => {
   // Initial Load
   // -------------------------
   useEffect(() => {
-    if (!token) return;
+    if (token) {
+      loadWallet();
+      loadPrices();
 
-    const init = async () => {
-      setLoading(true);
-      await loadWallet();
-      await loadPrices();
-      setLoading(false);
-    };
+      const interval = setInterval(loadPrices, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [token, loadWallet]);
 
-    init();
-
-    const interval = setInterval(loadPrices, 60000);
-    return () => clearInterval(interval);
-  }, [token]);
 
   // -------------------------
   // UI
