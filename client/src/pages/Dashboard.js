@@ -1,9 +1,6 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
-import { useEffect, useState, useContext, useCallback } from "react";
-
-
 import Market from "../components/Market";
 import Trade from "../components/Trade";
 import Portfolio from "../components/Portfolio";
@@ -11,23 +8,22 @@ import History from "../components/History";
 import PriceChart from "../components/PriceChart";
 import PortfolioChart from "../components/PortfolioChart";
 import Analytics from "../components/Analytics";
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
 
   const [wallet, setWallet] = useState(null);
   const [prices, setPrices] = useState({});
-  const [loading, setLoading] = useState(true);
 
-  // -------------------------
-  // Load Wallet
-  // -------------------------
-   const loadWallet = useCallback(async () => {
+  // ✅ MEMOIZED FUNCTION
+  const loadWallet = useCallback(async () => {
     try {
       const res = await api.get("/api/wallet");
       setWallet(res.data);
     } catch (err) {
       if (err.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
         logout();
       } else {
         console.error("Wallet fetch failed", err);
@@ -35,50 +31,35 @@ const Dashboard = () => {
     }
   }, [logout]);
 
-
-
-  // -------------------------
-  // Load Market Prices
-  // -------------------------
-  const loadPrices = async () => {
+  // ✅ MEMOIZED FUNCTION
+  const loadPrices = useCallback(async () => {
     try {
       const res = await api.get("/api/market");
 
-      const map = {};
-      res.data.forEach(stock => {
-        map[stock.symbol] = stock.price;
+      const priceMap = {};
+      res.data.forEach(item => {
+        priceMap[item.symbol] = item.price;
       });
 
-      setPrices(map);
+      setPrices(priceMap);
     } catch (err) {
-      console.error("Market fetch failed", err);
-      setPrices({});
+      console.error("Price fetch failed", err);
     }
-  };
+  }, []);
 
-  // -------------------------
-  // Initial Load
-  // -------------------------
+  // ✅ ESLINT-SAFE useEffect
   useEffect(() => {
-    if (token) {
-      loadWallet();
-      loadPrices();
+    if (!token) return;
 
-      const interval = setInterval(loadPrices, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [token, loadWallet]);
+    loadWallet();
+    loadPrices();
 
-
-  // -------------------------
-  // UI
-  // -------------------------
-  if (loading) {
-    return <p style={{ padding: 20 }}>Loading dashboard...</p>;
-  }
+    const interval = setInterval(loadPrices, 5000);
+    return () => clearInterval(interval);
+  }, [token, loadWallet, loadPrices]);
 
   if (!wallet) {
-    return <p style={{ padding: 20 }}>Failed to load wallet</p>;
+    return <p>Loading wallet...</p>;
   }
 
   return (
@@ -86,22 +67,17 @@ const Dashboard = () => {
       <h2>Trading Dashboard</h2>
       <button onClick={logout}>Logout</button>
 
-      {/* Balance */}
       <div className="card">
         <h3>Account Balance</h3>
         <p>₹{wallet.balance}</p>
       </div>
 
-      {/* Market + Trade */}
       <div className="flex">
         <div className="card" style={{ flex: 1 }}>
           <Market
             prices={prices}
             onBuy={async (symbol) => {
-              await api.post("/api/trade/buy", {
-                symbol,
-                quantity: 1
-              });
+              await api.post("/api/trade/buy", { symbol, quantity: 1 });
               await loadWallet();
             }}
           />
@@ -112,34 +88,22 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Portfolio */}
       <div className="card">
-        <Portfolio
-          holdings={wallet.holdings || []}
-          prices={prices}
-        />
+        <Portfolio holdings={wallet.holdings} prices={prices} />
       </div>
 
-      {/* Price Chart */}
       <div className="card">
-        {Object.keys(prices).length > 0 ? (
-          <PriceChart prices={prices} />
-        ) : (
-          <p>No market data yet</p>
-        )}
+        <PriceChart prices={prices} />
       </div>
 
-      {/* Portfolio Chart */}
       <div className="card">
-        <PortfolioChart holdings={wallet.holdings || []} />
+        <PortfolioChart holdings={wallet.holdings} />
       </div>
 
-      {/* Analytics */}
       <div className="card">
         <Analytics />
       </div>
 
-      {/* History */}
       <div className="card">
         <History />
       </div>
@@ -148,6 +112,7 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 
 
 
