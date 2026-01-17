@@ -68,52 +68,49 @@ router.post("/buy", auth, async (req, res) => {
 
 // SELL STOCK
 router.post("/sell", auth, async (req, res) => {
-  try {
-    const { symbol, quantity } = req.body;
+  const { symbol, quantity } = req.body;
 
+  try {
     const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     const holding = user.holdings.find(h => h.symbol === symbol);
-
     if (!holding || holding.quantity < quantity) {
-      return res.status(400).json({ error: "Not enough stock to sell" });
+      return res.status(400).json({ error: "Not enough shares" });
     }
 
     // 🔥 Fetch live price
     const stock = await getStockPrice(symbol);
-    if (!stock) {
-      return res.status(400).json({ error: "Stock price unavailable" });
-    }
+    if (!stock) return res.status(500).json({ error: "Price unavailable" });
 
-    const price = stock.price;
-    const revenue = price * quantity;
+    const sellPrice = stock.price;
 
-    // 🔥 Update balance
-    user.balance += revenue;
+    // 🔥 REALIZED P/L
+    const realizedPL = (sellPrice - holding.avgPrice) * quantity;
 
-    // 🔥 Update holdings
+    // Update balance
+    user.balance += sellPrice * quantity;
+
+    // Update holding
     holding.quantity -= quantity;
-
     if (holding.quantity === 0) {
       user.holdings = user.holdings.filter(h => h.symbol !== symbol);
     }
 
-    // 🔥 Save history
+    // 🔥 Store trade with pnl
     user.tradeHistory.push({
       type: "SELL",
       symbol,
       quantity,
-      price
+      price: sellPrice,
+      pnl: realizedPL
     });
 
     await user.save();
 
-    res.json({ message: "Stock sold successfully" });
+    res.json({ message: "Stock sold", realizedPL });
   } catch (err) {
-    console.error("SELL ERROR:", err.message);
+    console.error("Sell error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
