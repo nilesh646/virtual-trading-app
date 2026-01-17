@@ -1,37 +1,45 @@
 import { useState } from "react";
 import api from "../api/axios";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
 
 const Trade = ({ refreshWallet }) => {
   const [symbol, setSymbol] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  const buy = async () => {
-    await api.post("/api/trade/buy", { symbol, quantity });
-    refreshWallet();
+  const sellStock = async () => {
+    try {
+      setLoading(true);
+      await api.post("/api/trade/sell", { symbol, quantity });
+      toast.success("Stock sold!");
+      refreshWallet();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Sell failed");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const sell = async () => {
-  try {
-    await api.post("/api/trade/sell", {
-      symbol,
-      quantity: Number(quantity)
-    });
-    toast.success("Sell successful");
-    refreshWallet();
-  } catch (err) {
-    toast.error(err.response?.data?.error || "Sell failed");
-  }
-  };
-
 
   return (
-    <div className="card">
-      <h3>Trade</h3>
-      <input placeholder="Symbol" onChange={e => setSymbol(e.target.value)} />
-      <input type="number" value={quantity} onChange={e => setQuantity(+e.target.value)} />
-      <button onClick={buy}>Buy</button>
-      <button onClick={sell}>Sell</button>
+    <div>
+      <h3>Sell Stock</h3>
+
+      <input
+        placeholder="Symbol (AAPL)"
+        value={symbol}
+        onChange={e => setSymbol(e.target.value.toUpperCase())}
+      />
+
+      <input
+        type="number"
+        min="1"
+        value={quantity}
+        onChange={e => setQuantity(+e.target.value)}
+      />
+
+      <button onClick={sellStock} disabled={loading}>
+        {loading ? "Processing..." : "Sell"}
+      </button>
     </div>
   );
 };
