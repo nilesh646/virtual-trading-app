@@ -1,5 +1,5 @@
-import api from "../api/axios";
-import toast from "react-hot-toast";
+// import api from "../api/axios";
+// import toast from "react-hot-toast";
 
 const Portfolio = ({ holdings, prices }) => {
   let totalPL = 0;
