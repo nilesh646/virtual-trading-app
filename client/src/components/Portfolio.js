@@ -2,17 +2,21 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 
 const Portfolio = ({ holdings, prices, refreshWallet }) => {
-  let totalPL = 0;
-
   if (!holdings || holdings.length === 0) {
     return <p>No holdings</p>;
   }
+
+  if (!prices || Object.keys(prices).length === 0) {
+    return <p>Loading prices...</p>;
+  }
+
+  let totalPL = 0;
 
   const sellOne = async (symbol) => {
     try {
       await api.post("/api/trade/sell", { symbol, quantity: 1 });
       toast.success("Stock sold");
-      refreshWallet(); // ✅ now defined
+      refreshWallet();
     } catch (err) {
       toast.error(err.response?.data?.error || "Sell failed");
     }
@@ -23,7 +27,9 @@ const Portfolio = ({ holdings, prices, refreshWallet }) => {
       <h3>Portfolio</h3>
 
       {holdings.map((h) => {
-        const currentPrice = prices?.[h.symbol] || 0;
+        const currentPrice = prices[h.symbol];
+        if (!currentPrice) return null;
+
         const invested = h.quantity * h.avgPrice;
         const current = h.quantity * currentPrice;
         const pl = current - invested;
@@ -62,4 +68,5 @@ const Portfolio = ({ holdings, prices, refreshWallet }) => {
 };
 
 export default Portfolio;
+
 
