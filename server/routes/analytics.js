@@ -9,21 +9,19 @@ router.get("/", auth, async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const trades = user.tradeHistory || [];
-
     const sellTrades = trades.filter(t => t.type === "SELL");
 
-    const totalTrades = sellTrades.length;
     const wins = sellTrades.filter(t => t.pnl > 0).length;
     const losses = sellTrades.filter(t => t.pnl < 0).length;
 
-    const totalPL = sellTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-
     res.json({
-      totalTrades,
+      totalTrades: sellTrades.length,
       wins,
       losses,
-      winRate: totalTrades ? ((wins / totalTrades) * 100).toFixed(2) : 0,
-      totalPL: totalPL.toFixed(2)
+      winRate: sellTrades.length
+        ? ((wins / sellTrades.length) * 100).toFixed(2)
+        : 0,
+      totalPL: sellTrades.reduce((s, t) => s + (t.pnl || 0), 0)
     });
   } catch (err) {
     res.status(500).json({ error: "Analytics error" });
