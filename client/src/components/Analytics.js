@@ -5,36 +5,26 @@ const Analytics = () => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    const loadAnalytics = async () => {
-      try {
-        const res = await api.get("/api/analytics");
-        setData(res.data);
-      } catch (err) {
-        console.error("Analytics load failed", err);
-      }
-    };
-
-    loadAnalytics();
+    api.get("/api/analytics")
+      .then(res => setData(res.data))
+      .catch(err => console.error("Analytics load failed", err));
   }, []);
 
   if (!data) return <p>Loading analytics...</p>;
 
+  const totalPL = Number(data.totalPL || 0);
+  const winRate = Number(data.winRate || 0);
+
   return (
     <div>
       <h3>Portfolio Analytics</h3>
-
       <p>Total Trades: {data.totalTrades}</p>
       <p>Wins: {data.wins}</p>
       <p>Losses: {data.losses}</p>
-      <p>Win Rate: {data.winRate}%</p>
-
-      <h4
-        style={{
-          color: data.totalPL >= 0 ? "green" : "red"
-        }}
-      >
-        Total P/L: ₹{data.totalPL.toFixed(2)}
-      </h4>
+      <p>Win Rate: {winRate.toFixed(2)}%</p>
+      <p style={{ color: totalPL >= 0 ? "green" : "red" }}>
+        Total P/L: ₹{totalPL.toFixed(2)}
+      </p>
     </div>
   );
 };
