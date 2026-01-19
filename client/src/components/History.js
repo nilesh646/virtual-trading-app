@@ -4,6 +4,9 @@ import api from "../api/axios";
 const History = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const pl = Number(t.pl || 0);
+  <span>{pl.toFixed(2)}</span>
+
 
   useEffect(() => {
     const loadHistory = async () => {

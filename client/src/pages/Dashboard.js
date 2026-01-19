@@ -35,7 +35,7 @@ const Dashboard = () => {
       res.data.forEach(item => {
         priceMap[item.symbol] = item.price;
       });
-      setPrices(priceMap);
+      setPrices({ ...priceMap }); // force new object
     } catch (err) {
       console.error("Price fetch failed", err);
     }
