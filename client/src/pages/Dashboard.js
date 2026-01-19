@@ -8,6 +8,7 @@ import History from "../components/History";
 import PriceChart from "../components/PriceChart";
 import PortfolioChart from "../components/PortfolioChart";
 import Analytics from "../components/Analytics";
+import EquityCurve from "../components/EquityCurve";
 import toast from "react-hot-toast";
 
 const Dashboard = () => {
@@ -108,6 +109,7 @@ const Dashboard = () => {
 
       <div className="card">
         <Analytics />
+        <EquityCurve />
       </div>
 
       <div className="card">
