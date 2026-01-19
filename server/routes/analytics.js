@@ -18,17 +18,21 @@ router.get("/", auth, async (req, res) => {
     let totalPL = 0;
 
     trades.forEach(t => {
-      totalPL += t.pl;
-      if (t.pl >= 0) wins++;
+      const pl = Number(t.pl) || 0;
+
+      totalPL += pl;
+
+      if (pl >= 0) wins++;
       else losses++;
+
     });
 
     res.json({
       totalTrades: trades.length,
       wins,
       losses,
-      winRate: trades.length ? ((wins / trades.length) * 100).toFixed(2) : 0,
-      totalPL: totalPL.toFixed(2)
+      winRate: trades.length ? (wins / trades.length) * 100 : 0,
+      totalPL
     });
   } catch (err) {
     console.error("Analytics error:", err);
