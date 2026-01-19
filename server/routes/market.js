@@ -15,4 +15,13 @@ router.get("/", async (req, res) => {
   res.json(results);
 });
 
+const handleBuy = async (symbol) => {
+  try {
+    await onBuy(symbol);
+  } catch (err) {
+    alert("Buy failed");
+  }
+};
+
+
 module.exports = router;

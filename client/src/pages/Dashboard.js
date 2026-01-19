@@ -66,6 +66,8 @@ const Dashboard = () => {
     return <p>Loading wallet...</p>;
   }
 
+  if (!token) return null;
+
   return (
     <div className="container">
       <h2>Trading Dashboard</h2>

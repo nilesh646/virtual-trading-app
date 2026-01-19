@@ -28,11 +28,16 @@ const userSchema = new mongoose.Schema({
   tradeHistory: [
   {
     type: {
-      type: String, // "BUY" or "SELL"
+      type: String, // BUY or SELL
+      required: true
     },
     symbol: String,
     quantity: Number,
     price: Number,
+    pnl: {
+      type: Number,
+      default: 0
+    },
     date: {
       type: Date,
       default: Date.now
