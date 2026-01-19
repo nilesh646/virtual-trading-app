@@ -5,37 +5,28 @@ const User = require("../models/User");
 
 router.get("/", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.user);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    let totalInvested = 0;
-    let totalSold = 0;
-    let buyCount = 0;
-    let sellCount = 0;
+    const trades = user.tradeHistory || [];
 
-    user.tradeHistory.forEach(t => {
-      if (t.type === "BUY") {
-        totalInvested += t.price * t.quantity;
-        buyCount++;
-      }
-      if (t.type === "SELL") {
-        totalSold += t.price * t.quantity;
-        sellCount++;
-      }
-    });
+    const sellTrades = trades.filter(t => t.type === "SELL");
 
-    const netPL = totalSold - totalInvested;
+    const totalTrades = sellTrades.length;
+    const wins = sellTrades.filter(t => t.pnl > 0).length;
+    const losses = sellTrades.filter(t => t.pnl < 0).length;
+
+    const totalPL = sellTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
 
     res.json({
-      totalInvested,
-      totalSold,
-      netPL,
-      buyCount,
-      sellCount
+      totalTrades,
+      wins,
+      losses,
+      winRate: totalTrades ? ((wins / totalTrades) * 100).toFixed(2) : 0,
+      totalPL: totalPL.toFixed(2)
     });
   } catch (err) {
-    console.error("ANALYTICS ERROR:", err.message);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Analytics error" });
   }
 });
 
