@@ -8,56 +8,59 @@ import History from "../components/History";
 import PriceChart from "../components/PriceChart";
 import PortfolioChart from "../components/PortfolioChart";
 import Analytics from "../components/Analytics";
-import EquityCurve from "../components/EquityCurve";
-import toast from "react-hot-toast";
+import EquityCurveChart from "../components/EquityCurveChart";
+
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
 
   const [wallet, setWallet] = useState(null);
   const [prices, setPrices] = useState({});
+  const [equityCurve, setEquityCurve] = useState([]);
 
   // ✅ MEMOIZED FUNCTION
   const loadWallet = useCallback(async () => {
-    try {
-      const res = await api.get("/api/wallet");
-      setWallet(res.data);
-    } catch (err) {
-      if (err.response?.status === 401) {
-        toast.error("Session expired. Please login again.");
-        logout();
-      } else {
-        console.error("Wallet fetch failed", err);
-      }
-    }
-  }, [logout]);
+  try {
+    const res = await api.get("/api/wallet");
+    setWallet(res.data);
+  } catch (err) {
+    console.error("Wallet fetch failed", err);
+  }
+ }, []);
 
-  // ✅ MEMOIZED FUNCTION
   const loadPrices = useCallback(async () => {
     try {
       const res = await api.get("/api/market");
-
       const priceMap = {};
       res.data.forEach(item => {
         priceMap[item.symbol] = item.price;
       });
-
       setPrices(priceMap);
     } catch (err) {
       console.error("Price fetch failed", err);
     }
   }, []);
 
+  const loadEquityCurve = useCallback(async () => {
+    try {
+      const res = await api.get("/api/analytics/equity-curve");
+      setEquityCurve(res.data);
+    } catch (err) {
+      console.error("Equity curve load failed", err);
+    }
+  }, []);
+
+
+
   // ✅ ESLINT-SAFE useEffect
   useEffect(() => {
-    if (!token) return;
+    if (token) {
+      loadWallet();
+      loadPrices();
+      loadEquityCurve();
+    }
+  }, [token, loadWallet, loadPrices, loadEquityCurve]);
 
-    loadWallet();
-    loadPrices();
-
-    const interval = setInterval(loadPrices, 5000);
-    return () => clearInterval(interval);
-  }, [token, loadWallet, loadPrices]);
 
   if (!wallet) {
     return <p>Loading wallet...</p>;
@@ -109,8 +112,13 @@ const Dashboard = () => {
 
       <div className="card">
         <Analytics />
-        <EquityCurve />
+        <EquityCurveChart />
       </div>
+
+      <div className="card">
+        <EquityCurveChart data={equityCurve} />
+      </div>
+
 
       <div className="card">
         <History />
