@@ -2,26 +2,29 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 
 const Analytics = () => {
-  const [stats, setStats] = useState(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     api.get("/api/analytics")
-      .then(res => setStats(res.data))
-      .catch(() => setStats(null));
+      .then(res => setData(res.data))
+      .catch(() => {});
   }, []);
 
-  if (!stats) return <p>Loading analytics...</p>;
+  if (!data) return <p>Loading analytics...</p>;
 
   return (
     <div>
       <h3>Performance Analytics</h3>
-      <p>Total Trades: {stats.totalTrades}</p>
-      <p>Wins: {stats.wins}</p>
-      <p>Losses: {stats.losses}</p>
-      <p>Win Rate: {stats.winRate}%</p>
-      <p>Total P/L: ₹{stats.totalPL}</p>
+      <p>Total Trades: {data.totalTrades}</p>
+      <p>Wins: {data.wins}</p>
+      <p>Losses: {data.losses}</p>
+      <p>Win Rate: {data.winRate}%</p>
+      <p>Total P/L: ₹{Number(data.totalPL).toFixed(2)}</p>
+      <p>Max Drawdown: {data.maxDrawdown}%</p>
+      <p>Sharpe Ratio: {data.sharpeRatio}</p>
     </div>
   );
 };
 
 export default Analytics;
+
