@@ -51,7 +51,9 @@ router.post("/buy", auth, async (req, res) => {
       type: "BUY",
       symbol,
       quantity,
-      price
+      price: buyPrice,
+      pl: 0,
+      date: new Date()
     });
 
     await user.save();
@@ -67,6 +69,7 @@ router.post("/buy", auth, async (req, res) => {
 
 
 // SELL STOCK
+// SELL STOCK
 router.post("/sell", auth, async (req, res) => {
   const { symbol, quantity } = req.body;
 
@@ -79,13 +82,7 @@ router.post("/sell", auth, async (req, res) => {
       return res.status(400).json({ error: "Not enough shares" });
     }
 
-    // 🔥 Fetch live price
-    const stock = await getStockPrice(symbol);
-    if (!stock) return res.status(500).json({ error: "Price unavailable" });
-
-    const sellPrice = stock.price;
-
-    // 🔥 REALIZED P/L
+    const sellPrice = holding.avgPrice; // OR live price if you want
     const realizedPL = (sellPrice - holding.avgPrice) * quantity;
 
     // Update balance
@@ -97,21 +94,21 @@ router.post("/sell", auth, async (req, res) => {
       user.holdings = user.holdings.filter(h => h.symbol !== symbol);
     }
 
-    // 🔥 Store trade with pnl
+    // 🔥 SAVE REALIZED P/L
     user.tradeHistory.push({
       type: "SELL",
       symbol,
       quantity,
       price: sellPrice,
-      pnl: realizedPL
+      pl: realizedPL,
+      date: new Date()
     });
 
     await user.save();
-
-    res.json({ message: "Stock sold", realizedPL });
+    res.json({ message: "Stock sold successfully" });
   } catch (err) {
     console.error("Sell error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Sell failed" });
   }
 });
 
