@@ -4,9 +4,6 @@ import api from "../api/axios";
 const History = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const pl = Number(t.pl || 0);
-  <span>{pl.toFixed(2)}</span>
-
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -26,10 +23,11 @@ const History = () => {
   if (loading) return <p>Loading trade history...</p>;
   if (!history.length) return <p>No trades yet</p>;
 
-  // ✅ SAFE realized P/L calculation
+  // ✅ TOTAL REALIZED P/L (SAFE)
   const totalRealizedPL = history.reduce((sum, trade) => {
-    if (trade.type === "SELL" && typeof trade.pnl === "number") {
-      return sum + trade.pnl;
+    const pl = Number(trade.pl || 0);
+    if (trade.type === "SELL") {
+      return sum + pl;
     }
     return sum;
   }, 0);
@@ -38,28 +36,35 @@ const History = () => {
     <div>
       <h3>Order History</h3>
 
-      {history.map((trade, index) => (
-        <div key={index}>
-          <strong>{trade.type}</strong> — {trade.symbol}<br />
-          Qty: {trade.quantity}<br />
-          Price: ₹{trade.price}<br />
+      {history.map((trade, index) => {
+        const pl = Number(trade.pl || 0);
 
-          {trade.type === "SELL" && typeof trade.pnl === "number" && (
-            <span
-              style={{
-                color: trade.pnl >= 0 ? "green" : "red",
-                fontWeight: "bold"
-              }}
-            >
-              Realized P/L: ₹{trade.pnl.toFixed(2)}
-            </span>
-          )}
+        return (
+          <div key={index}>
+            <strong>{trade.type}</strong> — {trade.symbol}
+            <br />
+            Qty: {trade.quantity}
+            <br />
+            Price: ₹{trade.price}
+            <br />
 
-          <br />
-          <small>{new Date(trade.date).toLocaleString()}</small>
-          <hr />
-        </div>
-      ))}
+            {trade.type === "SELL" && (
+              <span
+                style={{
+                  color: pl >= 0 ? "green" : "red",
+                  fontWeight: "bold"
+                }}
+              >
+                Realized P/L: ₹{pl.toFixed(2)}
+              </span>
+            )}
+
+            <br />
+            <small>{new Date(trade.date).toLocaleString()}</small>
+            <hr />
+          </div>
+        );
+      })}
 
       <h4 style={{ color: totalRealizedPL >= 0 ? "green" : "red" }}>
         Total Realized P/L: ₹{totalRealizedPL.toFixed(2)}
