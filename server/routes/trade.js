@@ -100,7 +100,7 @@ router.post("/sell", auth, async (req, res) => {
       symbol,
       quantity,
       price: sellPrice,
-      pl: realizedPL,
+      pl: Number(realizedPL.toFixed(2)),
       date: new Date()
     });
 
