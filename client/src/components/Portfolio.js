@@ -1,23 +1,29 @@
-const Portfolio = ({ holdings = [], prices = {} }) => {
-  const symbols = Object.keys(prices || {});
+import api from "../api/axios";
+import toast from "react-hot-toast";
+
+const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
   if (!holdings.length) return <p>No holdings</p>;
-  if (symbols.length === 0) return <p>Loading prices...</p>;
 
-  const rows = holdings
-    .map(h => {
-      const price = prices[h.symbol];
-      if (price == null) return null;
+  const sellOne = async (symbol) => {
+    try {
+      await api.post("/api/trade/sell", { symbol, quantity: 1 });
+      toast.success(`Sold 1 ${symbol}`);
+      refreshWallet();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Sell failed");
+    }
+  };
 
-      const avgPrice = Number(h.avgPrice) || 0;
-      const quantity = Number(h.quantity) || 0;
+  const rows = holdings.map(h => {
+    const price = prices[h.symbol];
+    if (!price) return null;
 
-      const invested = quantity * avgPrice;
-      const current = quantity * price;
-      const pl = current - invested;
+    const invested = h.quantity * h.avgPrice;
+    const current = h.quantity * price;
+    const pl = current - invested;
 
-      return { symbol: h.symbol, quantity, avgPrice, price, pl };
-    })
-    .filter(Boolean);
+    return { ...h, price, pl };
+  }).filter(Boolean);
 
   const totalPL = rows.reduce((sum, r) => sum + r.pl, 0);
 
@@ -34,6 +40,8 @@ const Portfolio = ({ holdings = [], prices = {} }) => {
           <span style={{ color: h.pl >= 0 ? "green" : "red" }}>
             P/L: ₹{h.pl.toFixed(2)}
           </span>
+          <br />
+          <button onClick={() => sellOne(h.symbol)}>Sell 1</button>
           <hr />
         </div>
       ))}
