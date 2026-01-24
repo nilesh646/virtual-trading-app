@@ -2,10 +2,7 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 
 const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
-  // 🛑 If no holdings
   if (!holdings.length) return <p>No holdings</p>;
-
-  // 🛑 If prices not ready yet
   if (!prices || Object.keys(prices).length === 0)
     return <p>Loading prices...</p>;
 
@@ -20,39 +17,41 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
   };
 
   const rows = holdings
-    .map(h => {
+    .map((h) => {
       const price = prices[h.symbol];
       if (!price) return null;
 
       const invested = h.quantity * h.avgPrice;
       const current = h.quantity * price;
       const pl = current - invested;
+      const percent = invested !== 0 ? (pl / invested) * 100 : 0;
 
-      return { ...h, price, pl };
+      return { ...h, price, pl, percent };
     })
     .filter(Boolean);
 
   const totalPL = rows.reduce((sum, r) => sum + r.pl, 0);
+  const totalInvested = rows.reduce((sum, r) => sum + r.quantity * r.avgPrice, 0);
+  const totalPercent = totalInvested !== 0 ? (totalPL / totalInvested) * 100 : 0;
 
   return (
     <div>
       <h3>Portfolio</h3>
 
-      {rows.map(h => (
+      {rows.map((h) => (
         <div key={h.symbol}>
           <strong>{h.symbol}</strong><br />
           Qty: {h.quantity}<br />
           Avg Price: ₹{h.avgPrice.toFixed(2)}<br />
           Current Price: ₹{h.price.toFixed(2)}<br />
 
-          {/* 🔥 UPDATED COLOR STYLE */}
           <span
             style={{
               color: h.pl >= 0 ? "#00c853" : "#ff5252",
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
-            P/L: ₹{h.pl.toFixed(2)}
+            P/L: ₹{h.pl.toFixed(2)} ({h.percent.toFixed(2)}%)
           </span>
 
           <br />
@@ -61,14 +60,12 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
         </div>
       ))}
 
-      {/* 🔥 TOTAL P/L WITH SAME STYLE */}
       <h4
         style={{
           color: totalPL >= 0 ? "#00c853" : "#ff5252",
-          fontWeight: "bold"
         }}
       >
-        Total P/L: ₹{totalPL.toFixed(2)}
+        Total P/L: ₹{totalPL.toFixed(2)} ({totalPercent.toFixed(2)}%)
       </h4>
     </div>
   );
