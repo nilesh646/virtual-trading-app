@@ -20,15 +20,16 @@ const Dashboard = () => {
 
   // ✅ MEMOIZED FUNCTION
   const loadWallet = useCallback(async () => {
-  try {
-    const res = await api.get("/api/wallet");
-    setWallet(res.data);
-  } catch (err) {
-    console.error("Wallet fetch failed", err);
-  }
- }, []);
+    try {
+      const res = await api.get("/api/wallet");
+      setWallet(res.data);
+    } catch (err) {
+      console.error("Wallet fetch failed", err);
+    }
+  }, []);
 
-  const loadPrices = async () => {
+
+  const loadPrices = useCallback(async () => {
     try {
       const res = await api.get("/api/market");
 
@@ -37,15 +38,14 @@ const Dashboard = () => {
         priceMap[stock.symbol] = stock.price;
       });
 
-      // ✅ Only update if valid
       if (Object.keys(priceMap).length > 0) {
         setPrices(prev => ({ ...prev, ...priceMap }));
       }
     } catch (err) {
       console.error("Price fetch failed");
-      // ❌ DO NOT reset prices
     }
-  };
+  }, []);
+
 
 
   const loadEquityCurve = useCallback(async () => {
@@ -61,12 +61,15 @@ const Dashboard = () => {
 
   // ✅ ESLINT-SAFE useEffect
   useEffect(() => {
-    if (token) {
-      loadWallet();
-      loadPrices();
-      loadEquityCurve();
-    }
-  }, [token, loadWallet, loadPrices, loadEquityCurve]);
+    if (!token) return;
+
+    loadWallet();
+    loadPrices();
+
+    const interval = setInterval(loadPrices, 5000);
+    return () => clearInterval(interval);
+  }, [token, loadWallet, loadPrices]);
+
 
 
   if (!wallet) {
