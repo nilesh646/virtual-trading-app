@@ -2,8 +2,10 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 
 const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
-  // 🛑 If prices not loaded yet, don't render calculations
+  // 🛑 If no holdings
   if (!holdings.length) return <p>No holdings</p>;
+
+  // 🛑 If prices not ready yet
   if (!prices || Object.keys(prices).length === 0)
     return <p>Loading prices...</p>;
 
@@ -17,18 +19,18 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
     }
   };
 
-  const rows = holdings.map(h => {
-    const price = prices[h.symbol];
+  const rows = holdings
+    .map(h => {
+      const price = prices[h.symbol];
+      if (!price) return null;
 
-    // 🛑 If price missing, skip this row
-    if (!price) return null;
+      const invested = h.quantity * h.avgPrice;
+      const current = h.quantity * price;
+      const pl = current - invested;
 
-    const invested = h.quantity * h.avgPrice;
-    const current = h.quantity * price;
-    const pl = current - invested;
-
-    return { ...h, price, pl };
-  }).filter(Boolean);
+      return { ...h, price, pl };
+    })
+    .filter(Boolean);
 
   const totalPL = rows.reduce((sum, r) => sum + r.pl, 0);
 
@@ -42,16 +44,30 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
           Qty: {h.quantity}<br />
           Avg Price: ₹{h.avgPrice.toFixed(2)}<br />
           Current Price: ₹{h.price.toFixed(2)}<br />
-          <span style={{ color: h.pl >= 0 ? "green" : "red" }}>
+
+          {/* 🔥 UPDATED COLOR STYLE */}
+          <span
+            style={{
+              color: h.pl >= 0 ? "#00c853" : "#ff5252",
+              fontWeight: "bold"
+            }}
+          >
             P/L: ₹{h.pl.toFixed(2)}
           </span>
+
           <br />
           <button onClick={() => sellOne(h.symbol)}>Sell 1</button>
           <hr />
         </div>
       ))}
 
-      <h4 style={{ color: totalPL >= 0 ? "green" : "red" }}>
+      {/* 🔥 TOTAL P/L WITH SAME STYLE */}
+      <h4
+        style={{
+          color: totalPL >= 0 ? "#00c853" : "#ff5252",
+          fontWeight: "bold"
+        }}
+      >
         Total P/L: ₹{totalPL.toFixed(2)}
       </h4>
     </div>
