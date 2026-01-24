@@ -2,7 +2,10 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 
 const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
+  // 🛑 If prices not loaded yet, don't render calculations
   if (!holdings.length) return <p>No holdings</p>;
+  if (!prices || Object.keys(prices).length === 0)
+    return <p>Loading prices...</p>;
 
   const sellOne = async (symbol) => {
     try {
@@ -16,6 +19,8 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
 
   const rows = holdings.map(h => {
     const price = prices[h.symbol];
+
+    // 🛑 If price missing, skip this row
     if (!price) return null;
 
     const invested = h.quantity * h.avgPrice;
