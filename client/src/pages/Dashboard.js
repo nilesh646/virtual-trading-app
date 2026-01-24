@@ -48,14 +48,16 @@ const Dashboard = () => {
 
 
 
+
   const loadEquityCurve = useCallback(async () => {
     try {
       const res = await api.get("/api/analytics/equity-curve");
       setEquityCurve(res.data);
     } catch (err) {
-      console.error("Equity curve load failed", err);
+      console.error("Equity curve load failed");
     }
   }, []);
+
 
 
 
@@ -65,10 +67,13 @@ const Dashboard = () => {
 
     loadWallet();
     loadPrices();
+    loadEquityCurve();   // 🔥 ADD THIS
 
     const interval = setInterval(loadPrices, 5000);
     return () => clearInterval(interval);
-  }, [token, loadWallet, loadPrices]);
+  }, [token, loadWallet, loadPrices, loadEquityCurve]);
+
+
 
 
 
