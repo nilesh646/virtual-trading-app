@@ -15,7 +15,7 @@ const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
 
   const [wallet, setWallet] = useState(null);
-  const [prices, setPrices] = useState({});
+  const [prices, setPrices] = useState(null);
   const [equityCurve, setEquityCurve] = useState([]);
 
   // ✅ MEMOIZED FUNCTION
@@ -28,18 +28,25 @@ const Dashboard = () => {
   }
  }, []);
 
-  const loadPrices = useCallback(async () => {
+  const loadPrices = async () => {
     try {
       const res = await api.get("/api/market");
+
       const priceMap = {};
-      res.data.forEach(item => {
-        priceMap[item.symbol] = item.price;
+      res.data.forEach(stock => {
+        priceMap[stock.symbol] = stock.price;
       });
-      setPrices({ ...priceMap }); // force new object
+
+      // ✅ Only update if valid
+      if (Object.keys(priceMap).length > 0) {
+        setPrices(prev => ({ ...prev, ...priceMap }));
+      }
     } catch (err) {
-      console.error("Price fetch failed", err);
+      console.error("Price fetch failed");
+      // ❌ DO NOT reset prices
     }
-  }, []);
+  };
+
 
   const loadEquityCurve = useCallback(async () => {
     try {
