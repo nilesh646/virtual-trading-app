@@ -1,17 +1,28 @@
-const Portfolio = ({ holdings = [], prices }) => {
+const Portfolio = ({ holdings = [], prices = {} }) => {
   if (!holdings.length) return <p>No holdings</p>;
-  if (!prices) return <p>Loading prices...</p>;
+  if (Object.keys(prices).length === 0) return <p>Loading prices...</p>;
 
-  const rows = holdings.map(h => {
-    const price = prices[h.symbol];
-    if (!price) return null;
+  const rows = holdings
+    .map(h => {
+      const price = prices[h.symbol];
+      if (price == null) return null;
 
-    const invested = h.quantity * h.avgPrice;
-    const current = h.quantity * price;
-    const pl = current - invested;
+      const avgPrice = Number(h.avgPrice) || 0;
+      const quantity = Number(h.quantity) || 0;
 
-    return { ...h, price, pl };
-  }).filter(Boolean);
+      const invested = quantity * avgPrice;
+      const current = quantity * price;
+      const pl = current - invested;
+
+      return {
+        symbol: h.symbol,
+        quantity,
+        avgPrice,
+        price,
+        pl
+      };
+    })
+    .filter(Boolean);
 
   const totalPL = rows.reduce((sum, r) => sum + r.pl, 0);
 

@@ -1,24 +1,31 @@
 import { Line } from "react-chartjs-2";
 
 const PriceChart = ({ prices }) => {
-  const labels = Object.keys(prices);
-  const dataPoints = Object.values(prices);
+  if (!prices || Object.keys(prices).length === 0) {
+    return <p>Loading chart data...</p>;
+  }
 
-  if (!labels.length) return null;
+  const labels = Object.keys(prices);
+  const dataValues = Object.values(prices);
 
   const data = {
     labels,
     datasets: [
       {
-        label: "Live Stock Prices",
-        data: dataPoints,
+        label: "Live Prices",
+        data: dataValues,
         borderColor: "blue",
-        tension: 0.4
+        backgroundColor: "rgba(0, 0, 255, 0.1)"
       }
     ]
   };
 
-  return <Line data={data} />;
+  return (
+    <div>
+      <h3>Market Prices</h3>
+      <Line data={data} />
+    </div>
+  );
 };
 
 export default PriceChart;
