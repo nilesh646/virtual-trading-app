@@ -94,9 +94,10 @@ router.post("/sell", auth, async (req, res) => {
       symbol,
       quantity,
       price: sellPrice,
-      pl: pl,                 // ⭐ THIS FIXES EVERYTHING
+      pl: pl,   // must be pl NOT pnl
       date: new Date()
     });
+
 
     await user.save();
 
