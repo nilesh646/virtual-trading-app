@@ -1,6 +1,7 @@
 const Portfolio = ({ holdings = [], prices = {} }) => {
+  const symbols = Object.keys(prices || {});
   if (!holdings.length) return <p>No holdings</p>;
-  if (Object.keys(prices).length === 0) return <p>Loading prices...</p>;
+  if (symbols.length === 0) return <p>Loading prices...</p>;
 
   const rows = holdings
     .map(h => {
@@ -14,13 +15,7 @@ const Portfolio = ({ holdings = [], prices = {} }) => {
       const current = quantity * price;
       const pl = current - invested;
 
-      return {
-        symbol: h.symbol,
-        quantity,
-        avgPrice,
-        price,
-        pl
-      };
+      return { symbol: h.symbol, quantity, avgPrice, price, pl };
     })
     .filter(Boolean);
 
