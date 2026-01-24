@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext, useCallback } from "react";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import toast from "react-hot-toast";   // ✅ ADD THIS
 import Market from "../components/Market";
 import Trade from "../components/Trade";
 import Portfolio from "../components/Portfolio";
@@ -9,6 +10,7 @@ import PriceChart from "../components/PriceChart";
 import PortfolioChart from "../components/PortfolioChart";
 import Analytics from "../components/Analytics";
 import EquityCurveChart from "../components/EquityCurveChart";
+
 
 
 const Dashboard = () => {
