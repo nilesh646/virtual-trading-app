@@ -58,48 +58,56 @@ router.post("/buy", auth, async (req, res) => {
 
 
 // SELL STOCK
-// SELL STOCK
 router.post("/sell", auth, async (req, res) => {
-  const { symbol, quantity } = req.body;
-
   try {
+    const { symbol, quantity } = req.body;
+
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const holding = user.holdings.find(h => h.symbol === symbol);
     if (!holding || holding.quantity < quantity) {
-      return res.status(400).json({ error: "Not enough shares" });
+      return res.status(400).json({ error: "Not enough shares to sell" });
     }
 
-    const sellPrice = holding.avgPrice; // OR live price if you want
-    const realizedPL = (sellPrice - holding.avgPrice) * quantity;
+    const stock = await getStockPrice(symbol);
+    if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
 
-    // Update balance
-    user.balance += sellPrice * quantity;
+    const sellPrice = stock.price;
+    const buyPrice = holding.avgPrice;
 
-    // Update holding
-    holding.quantity -= quantit
+    const proceeds = sellPrice * quantity;
+    const pl = (sellPrice - buyPrice) * quantity;   // ✅ REAL PROFIT/LOSS
+
+    // Add money back
+    user.balance += proceeds;
+
+    // Reduce holdings
+    holding.quantity -= quantity;
     if (holding.quantity === 0) {
       user.holdings = user.holdings.filter(h => h.symbol !== symbol);
     }
 
-    // 🔥 SAVE REALIZED P/L
+    // Save trade history WITH REAL PL
     user.tradeHistory.push({
       type: "SELL",
       symbol,
       quantity,
       price: sellPrice,
-      pl: Number(realizedPL.toFixed(2)),
+      pl: pl,                 // ⭐ THIS FIXES EVERYTHING
       date: new Date()
     });
 
     await user.save();
-    res.json({ message: "Stock sold successfully" });
+
+    res.json({ message: "Stock sold", pl });
+
   } catch (err) {
-    console.error("Sell error:", err);
-    res.status(500).json({ error: "Sell failed" });
+    console.error("SELL ERROR:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 module.exports = router;
