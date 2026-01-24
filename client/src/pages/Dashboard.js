@@ -58,6 +58,29 @@ const Dashboard = () => {
     }
   }, []);
 
+  const buyStock = useCallback(async (symbol) => {
+    try {
+      await api.post("/api/trade/buy", { symbol, quantity: 1 });
+      toast.success(`Bought 1 ${symbol}`);
+      await loadWallet();
+      await loadPrices();
+      await loadEquityCurve();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Buy failed");
+    }
+  }, [loadWallet, loadPrices, loadEquityCurve]);
+
+  const sellStock = useCallback(async (symbol) => {
+    try {
+      await api.post("/api/trade/sell", { symbol, quantity: 1 });
+      toast.success(`Sold 1 ${symbol}`);
+      await loadWallet();
+      await loadPrices();
+      await loadEquityCurve();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Sell failed");
+    }
+  }, [loadWallet, loadPrices, loadEquityCurve]);
 
 
 
@@ -98,11 +121,9 @@ const Dashboard = () => {
           <Market
             prices={prices}
             balance={wallet.balance}
-            onBuy={async (symbol) => {
-              await api.post("/api/trade/buy", { symbol, quantity: 1 });
-              await loadWallet();
-              await loadPrices();
-            }}
+            holdings={wallet.holdings}
+            onBuy={buyStock}
+            onSell={sellStock}
           />
         </div>
 
@@ -115,7 +136,6 @@ const Dashboard = () => {
         <Portfolio
           holdings={wallet.holdings}
           prices={prices}
-          refreshWallet={loadWallet}
         />
       </div>
 
@@ -129,13 +149,8 @@ const Dashboard = () => {
 
       <div className="card">
         <Analytics />
-        <EquityCurveChart />
-      </div>
-
-      <div className="card">
         <EquityCurveChart data={equityCurve} />
       </div>
-
 
       <div className="card">
         <History />
