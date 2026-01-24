@@ -11,56 +11,53 @@ router.post("/buy", auth, async (req, res) => {
     const { symbol, quantity } = req.body;
 
     const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    // 🔥 FETCH STOCK FIRST
-    const stock = await getStockPrice(symbol);
-    if (!stock) {
-      return res.status(400).json({ error: "Stock price unavailable" });
-    }
+    const marketRes = await axios.get(`${process.env.MARKET_URL || ""}/api/market`);
+    const stock = marketRes.data.find(s => s.symbol === symbol);
 
-    const price = stock.price;
-    const cost = price * quantity;
+    if (!stock) return res.status(400).json({ error: "Stock not found" });
+
+    const cost = stock.price * quantity;
 
     if (user.balance < cost) {
       return res.status(400).json({ error: "Insufficient balance" });
     }
 
-    // 🔥 UPDATE WALLET
+    // Deduct balance
     user.balance -= cost;
 
-    const holding = user.holdings.find(h => h.symbol === symbol);
+    // Update holdings
+    const existing = user.holdings.find(h => h.symbol === symbol);
 
-    if (holding) {
-      holding.avgPrice =
-        (holding.avgPrice * holding.quantity + price * quantity) /
-        (holding.quantity + quantity);
-      holding.quantity += quantity;
+    if (existing) {
+      const totalQty = existing.quantity + quantity;
+      existing.avgPrice =
+        (existing.avgPrice * existing.quantity + stock.price * quantity) /
+        totalQty;
+      existing.quantity = totalQty;
     } else {
       user.holdings.push({
         symbol,
         quantity,
-        avgPrice: price
+        avgPrice: stock.price
       });
     }
 
-    // 🔥 SAVE HISTORY
+    // Add trade history (BUY has pl = 0)
     user.tradeHistory.push({
       type: "BUY",
       symbol,
       quantity,
-      price: buyPrice,
+      price: stock.price,
       pl: 0,
       date: new Date()
     });
 
     await user.save();
-
     res.json({ message: "Stock bought successfully" });
   } catch (err) {
-    console.error("BUY ERROR:", err.message);
+    console.error("BUY ERROR:", err); // 🔥 THIS WILL SHOW THE REAL ERROR IN RENDER LOGS
     res.status(500).json({ error: "Server error" });
   }
 });
