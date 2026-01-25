@@ -49,26 +49,23 @@ const Dashboard = () => {
     try {
       const res = await api.get("/api/market");
 
-      const updatedMarket = {};
+      const freshMarket = {};
 
       res.data.forEach(stock => {
-        updatedMarket[stock.symbol] = stock; // store full stock object
+        freshMarket[stock.symbol] = {
+          ...stock,
+          price: Number(stock.price) // ensure number
+        };
       });
 
-      setMarketData(prev => ({ ...prev, ...updatedMarket }));
+      // ✅ Always replace state (not merge)
+      setMarketData(freshMarket);
 
     } catch (err) {
-      console.error("Price fetch failed");
+      console.error("Price fetch failed", err);
     }
   }, []);
 
-  const prices = useMemo(() => {
-    const map = {};
-    Object.entries(marketData).forEach(([symbol, data]) => {
-      map[symbol] = data.price;
-    });
-    return map;
-  }, [marketData]);
 
 
 
