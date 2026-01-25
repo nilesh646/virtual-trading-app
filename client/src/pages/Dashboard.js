@@ -30,7 +30,7 @@ const Dashboard = () => {
   const [wallet, setWallet] = useState(null);
   // const [prices, setPrices] = useState({});
   const [equityCurve, setEquityCurve] = useState([]);
-  const [priceHistory, setPriceHistory] = useState({});
+  // const [priceHistory, setPriceHistory] = useState({});
   const [marketData, setMarketData] = useState({});
 
 
