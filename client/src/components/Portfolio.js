@@ -1,8 +1,17 @@
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import Sparkline from "./Sparkline";
 
-const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
+const Portfolio = ({
+  holdings = [],
+  prices = {},
+  priceHistory = {},
+  refreshWallet,
+}) => {
+  // No holdings
   if (!holdings.length) return <p>No holdings</p>;
+
+  // Prices not ready yet
   if (!prices || Object.keys(prices).length === 0)
     return <p>Loading prices...</p>;
 
@@ -19,7 +28,7 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
   const rows = holdings
     .map((h) => {
       const price = prices[h.symbol];
-      if (!price) return null;
+      if (!price) return null; // Skip if price missing
 
       const invested = h.quantity * h.avgPrice;
       const current = h.quantity * price;
@@ -31,7 +40,10 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
     .filter(Boolean);
 
   const totalPL = rows.reduce((sum, r) => sum + r.pl, 0);
-  const totalInvested = rows.reduce((sum, r) => sum + r.quantity * r.avgPrice, 0);
+  const totalInvested = rows.reduce(
+    (sum, r) => sum + r.quantity * r.avgPrice,
+    0
+  );
   const totalPercent = totalInvested !== 0 ? (totalPL / totalInvested) * 100 : 0;
 
   return (
@@ -40,10 +52,17 @@ const Portfolio = ({ holdings = [], prices = {}, refreshWallet }) => {
 
       {rows.map((h) => (
         <div key={h.symbol}>
-          <strong>{h.symbol}</strong><br />
-          Qty: {h.quantity}<br />
-          Avg Price: ₹{h.avgPrice.toFixed(2)}<br />
-          Current Price: ₹{h.price.toFixed(2)}<br />
+          <strong>{h.symbol}</strong>
+          <br />
+          Qty: {h.quantity}
+          <br />
+          Avg Price: ₹{h.avgPrice.toFixed(2)}
+          <br />
+          Current Price: ₹{h.price.toFixed(2)}
+          <br />
+
+          {/* 📈 Mini Price Trend */}
+          <Sparkline data={priceHistory[h.symbol] || []} />
 
           <span
             style={{

@@ -1,4 +1,10 @@
-import { useEffect, useState, useContext, useCallback, useMemo } from "react";
+import {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useMemo
+} from "react";
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -14,13 +20,13 @@ import EquityCurveChart from "../components/EquityCurveChart";
 import AllocationChart from "../components/AllocationChart";
 import RiskMeter from "../components/RiskMeter";
 
-
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
 
   const [wallet, setWallet] = useState(null);
   const [prices, setPrices] = useState({});
   const [equityCurve, setEquityCurve] = useState([]);
+  const [priceHistory, setPriceHistory] = useState({});
 
   // ================= LOAD WALLET =================
   const loadWallet = useCallback(async () => {
@@ -36,14 +42,31 @@ const Dashboard = () => {
   const loadPrices = useCallback(async () => {
     try {
       const res = await api.get("/api/market");
-      const priceMap = {};
-      res.data.forEach(stock => {
-        priceMap[stock.symbol] = stock.price;
-      });
 
-      if (Object.keys(priceMap).length > 0) {
-        setPrices(prev => ({ ...prev, ...priceMap }));
-      }
+      setPrices((prevPrices) => {
+        const updatedPrices = { ...prevPrices };
+
+        setPriceHistory((prevHistory) => {
+          const updatedHistory = { ...prevHistory };
+
+          res.data.forEach((stock) => {
+            updatedPrices[stock.symbol] = stock.price;
+
+            if (!updatedHistory[stock.symbol]) {
+              updatedHistory[stock.symbol] = [];
+            }
+
+            updatedHistory[stock.symbol] = [
+              ...updatedHistory[stock.symbol],
+              stock.price
+            ].slice(-10); // keep last 10 prices
+          });
+
+          return updatedHistory;
+        });
+
+        return updatedPrices;
+      });
     } catch (err) {
       console.error("Price fetch failed", err);
     }
@@ -59,31 +82,37 @@ const Dashboard = () => {
     }
   }, []);
 
-  // ================= BUY STOCK =================
-  const buyStock = useCallback(async (symbol) => {
-    try {
-      await api.post("/api/trade/buy", { symbol, quantity: 1 });
-      toast.success(`Bought 1 ${symbol}`);
-      await loadWallet();
-      await loadPrices();
-      await loadEquityCurve();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Buy failed");
-    }
-  }, [loadWallet, loadPrices, loadEquityCurve]);
+  // ================= BUY =================
+  const buyStock = useCallback(
+    async (symbol) => {
+      try {
+        await api.post("/api/trade/buy", { symbol, quantity: 1 });
+        toast.success(`Bought 1 ${symbol}`);
+        await loadWallet();
+        await loadPrices();
+        await loadEquityCurve();
+      } catch (err) {
+        toast.error(err.response?.data?.error || "Buy failed");
+      }
+    },
+    [loadWallet, loadPrices, loadEquityCurve]
+  );
 
-  // ================= SELL STOCK =================
-  const sellStock = useCallback(async (symbol) => {
-    try {
-      await api.post("/api/trade/sell", { symbol, quantity: 1 });
-      toast.success(`Sold 1 ${symbol}`);
-      await loadWallet();
-      await loadPrices();
-      await loadEquityCurve();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Sell failed");
-    }
-  }, [loadWallet, loadPrices, loadEquityCurve]);
+  // ================= SELL =================
+  const sellStock = useCallback(
+    async (symbol) => {
+      try {
+        await api.post("/api/trade/sell", { symbol, quantity: 1 });
+        toast.success(`Sold 1 ${symbol}`);
+        await loadWallet();
+        await loadPrices();
+        await loadEquityCurve();
+      } catch (err) {
+        toast.error(err.response?.data?.error || "Sell failed");
+      }
+    },
+    [loadWallet, loadPrices, loadEquityCurve]
+  );
 
   // ================= AUTO REFRESH =================
   useEffect(() => {
@@ -101,7 +130,7 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, [token, loadWallet, loadPrices, loadEquityCurve]);
 
-  // ================= CALCULATE LIVE TOTAL P/L =================
+  // ================= LIVE TOTAL P/L =================
   const totalPL = useMemo(() => {
     if (!wallet?.holdings?.length) return 0;
 
@@ -111,7 +140,7 @@ const Dashboard = () => {
     }, 0);
   }, [wallet, prices]);
 
-  // ================= RENDER GUARDS =================
+  // ================= GUARDS =================
   if (!token) return null;
   if (!wallet) return <p>Loading wallet...</p>;
 
@@ -120,16 +149,19 @@ const Dashboard = () => {
       <h2>Trading Dashboard</h2>
       <button onClick={logout}>Logout</button>
 
-      {/* Account Balance */}
       <div className="card">
         <h3>Account Balance</h3>
         <p>₹{wallet.balance.toFixed(2)}</p>
       </div>
 
-      {/* Live P/L */}
       <div className="card">
         <h3>Live Portfolio P/L</h3>
-        <p style={{ color: totalPL >= 0 ? "#00c853" : "#ff5252", fontWeight: "bold" }}>
+        <p
+          style={{
+            color: totalPL >= 0 ? "#00c853" : "#ff5252",
+            fontWeight: "bold"
+          }}
+        >
           ₹{totalPL.toFixed(2)}
         </p>
       </div>
@@ -151,7 +183,12 @@ const Dashboard = () => {
       </div>
 
       <div className="card">
-        <Portfolio holdings={wallet.holdings} prices={prices} />
+        <Portfolio
+          holdings={wallet.holdings}
+          prices={prices}
+          priceHistory={priceHistory}
+          refreshWallet={loadWallet}
+        />
       </div>
 
       <div className="card">
