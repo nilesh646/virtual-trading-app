@@ -12,6 +12,8 @@ import PortfolioChart from "../components/PortfolioChart";
 import Analytics from "../components/Analytics";
 import EquityCurveChart from "../components/EquityCurveChart";
 import AllocationChart from "../components/AllocationChart";
+import RiskMeter from "../components/RiskMeter";
+
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -162,6 +164,10 @@ const Dashboard = () => {
 
       <div className="card">
         <AllocationChart holdings={wallet.holdings} />
+      </div>
+
+      <div className="card">
+        <RiskMeter holdings={wallet.holdings} />
       </div>
 
       <div className="card">
