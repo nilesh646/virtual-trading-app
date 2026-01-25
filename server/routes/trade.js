@@ -3,10 +3,9 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const User = require("../models/User");
 const { getStockPrice } = require("../services/marketService");
-const axios = require("axios");   // 🔥 ADD THIS
 
 
-// BUY
+// ===================== BUY =====================
 router.post("/buy", auth, async (req, res) => {
   try {
     const { symbol, quantity } = req.body;
@@ -14,7 +13,7 @@ router.post("/buy", auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const stock = await getStockPrice(symbol); // ✅ DIRECT SERVICE CALL
+    const stock = await getStockPrice(symbol);
     if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
 
     const totalCost = stock.price * quantity;
@@ -25,15 +24,33 @@ router.post("/buy", auth, async (req, res) => {
 
     user.balance -= totalCost;
 
+    // 🎯 Auto risk management levels
+    const stopLoss = stock.price * 0.95;     // 5% below buy price
+    const takeProfit = stock.price * 1.10;   // 10% above buy price
+
     const existing = user.holdings.find(h => h.symbol === symbol);
+
     if (existing) {
       const totalQty = existing.quantity + quantity;
+
       existing.avgPrice =
         (existing.avgPrice * existing.quantity + stock.price * quantity) /
         totalQty;
+
       existing.quantity = totalQty;
+
+      // Update SL/TP to latest levels
+      existing.stopLoss = stopLoss;
+      existing.takeProfit = takeProfit;
+
     } else {
-      user.holdings.push({ symbol, quantity, avgPrice: stock.price });
+      user.holdings.push({
+        symbol,
+        quantity,
+        avgPrice: stock.price,
+        stopLoss,
+        takeProfit
+      });
     }
 
     user.tradeHistory.push({
@@ -46,6 +63,7 @@ router.post("/buy", auth, async (req, res) => {
     });
 
     await user.save();
+
     res.json({ message: "Stock bought successfully" });
 
   } catch (err) {
@@ -55,9 +73,7 @@ router.post("/buy", auth, async (req, res) => {
 });
 
 
-
-
-// SELL STOCK
+// ===================== MANUAL SELL =====================
 router.post("/sell", auth, async (req, res) => {
   try {
     const { symbol, quantity } = req.body;
@@ -77,27 +93,23 @@ router.post("/sell", auth, async (req, res) => {
     const buyPrice = holding.avgPrice;
 
     const proceeds = sellPrice * quantity;
-    const pl = (sellPrice - buyPrice) * quantity;   // ✅ REAL PROFIT/LOSS
+    const pl = (sellPrice - buyPrice) * quantity;
 
-    // Add money back
     user.balance += proceeds;
 
-    // Reduce holdings
     holding.quantity -= quantity;
     if (holding.quantity === 0) {
       user.holdings = user.holdings.filter(h => h.symbol !== symbol);
     }
 
-    // Save trade history WITH REAL PL
     user.tradeHistory.push({
       type: "SELL",
       symbol,
       quantity,
       price: sellPrice,
-      pl: pl,   // must be pl NOT pnl
+      pl,
       date: new Date()
     });
-
 
     await user.save();
 
@@ -108,7 +120,6 @@ router.post("/sell", auth, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 
 module.exports = router;

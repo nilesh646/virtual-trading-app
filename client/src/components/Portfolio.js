@@ -8,10 +8,8 @@ const Portfolio = ({
   priceHistory = {},
   refreshWallet,
 }) => {
-  // No holdings
   if (!holdings.length) return <p>No holdings</p>;
 
-  // Prices not ready yet
   if (!prices || Object.keys(prices).length === 0)
     return <p>Loading prices...</p>;
 
@@ -28,14 +26,18 @@ const Portfolio = ({
   const rows = holdings
     .map((h) => {
       const price = prices[h.symbol];
-      if (!price) return null; // Skip if price missing
+      if (!price) return null;
 
       const invested = h.quantity * h.avgPrice;
       const current = h.quantity * price;
       const pl = current - invested;
       const percent = invested !== 0 ? (pl / invested) * 100 : 0;
 
-      return { ...h, price, pl, percent };
+      // 🎯 Risk Levels
+      const stopLoss = h.stopLoss || h.avgPrice * 0.95;
+      const takeProfit = h.takeProfit || h.avgPrice * 1.1;
+
+      return { ...h, price, pl, percent, stopLoss, takeProfit };
     })
     .filter(Boolean);
 
@@ -61,9 +63,10 @@ const Portfolio = ({
           Current Price: ₹{h.price.toFixed(2)}
           <br />
 
-          {/* 📈 Mini Price Trend */}
+          {/* 📈 Mini Trend */}
           <Sparkline data={priceHistory[h.symbol] || []} />
 
+          {/* 💰 Profit/Loss */}
           <span
             style={{
               color: h.pl >= 0 ? "#00c853" : "#ff5252",
@@ -72,6 +75,19 @@ const Portfolio = ({
           >
             P/L: ₹{h.pl.toFixed(2)} ({h.percent.toFixed(2)}%)
           </span>
+
+          <br />
+
+          {/* 🛑 Stop Loss & 🎯 Take Profit */}
+          <div style={{ fontSize: "0.9rem", marginTop: "4px" }}>
+            <span style={{ color: "#ff5252" }}>
+              SL: ₹{h.stopLoss.toFixed(2)}
+            </span>
+            {" | "}
+            <span style={{ color: "#00c853" }}>
+              TP: ₹{h.takeProfit.toFixed(2)}
+            </span>
+          </div>
 
           <br />
           <button onClick={() => sellOne(h.symbol)}>Sell 1</button>

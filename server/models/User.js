@@ -22,7 +22,9 @@ const userSchema = new mongoose.Schema({
     {
       symbol: String,
       quantity: Number,
-      avgPrice: Number
+      avgPrice: Number,
+      stopLoss: Number,     // NEW
+      takeProfit: Number    // NEW
     }
   ],
   tradeHistory: [
