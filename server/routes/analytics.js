@@ -116,6 +116,25 @@ router.get("/equity-curve", auth, async (req, res) => {
   }
 });
 
+router.get("/leaders", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const sells = user.tradeHistory.filter(t => t.type === "SELL");
+
+    const sorted = [...sells].sort((a, b) => b.pl - a.pl);
+
+    res.json({
+      best: sorted[0] || null,
+      worst: sorted[sorted.length - 1] || null
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 module.exports = router;
 
 
