@@ -28,7 +28,7 @@ const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
 
   const [wallet, setWallet] = useState(null);
-  const [prices, setPrices] = useState({});
+  // const [prices, setPrices] = useState({});
   const [equityCurve, setEquityCurve] = useState([]);
   const [priceHistory, setPriceHistory] = useState({});
   const [marketData, setMarketData] = useState({});
@@ -49,27 +49,28 @@ const Dashboard = () => {
     try {
       const res = await api.get("/api/market");
 
-      setPrices((prevPrices) => {
-        const updatedPrices = { ...prevPrices };
+      const updatedMarket = {};
 
-        setPriceHistory((prevHistory) => {
-          const updatedHistory = { ...prevHistory };
-
-          res.data.forEach(stock => {
-            priceMap[stock.symbol] = stock; // store full object
-          });
-          setMarketData(prev => ({ ...prev, ...priceMap }));
-
-
-          return updatedHistory;
-        });
-
-        return updatedPrices;
+      res.data.forEach(stock => {
+        updatedMarket[stock.symbol] = stock; // store full stock object
       });
+
+      setMarketData(prev => ({ ...prev, ...updatedMarket }));
+
     } catch (err) {
-      console.error("Price fetch failed", err);
+      console.error("Price fetch failed");
     }
   }, []);
+
+  const prices = useMemo(() => {
+    const map = {};
+    Object.entries(marketData).forEach(([symbol, data]) => {
+      map[symbol] = data.price;
+    });
+    return map;
+  }, [marketData]);
+
+
 
   // ================= LOAD EQUITY CURVE =================
   const loadEquityCurve = useCallback(async () => {
@@ -123,11 +124,12 @@ const Dashboard = () => {
 
     const interval = setInterval(() => {
       loadPrices();
-      loadWallet(); // keeps P/L live
+      loadWallet();
     }, 5000);
 
     return () => clearInterval(interval);
   }, [token, loadWallet, loadPrices, loadEquityCurve]);
+
 
   // ================= LIVE TOTAL P/L =================
   const totalPL = useMemo(() => {
@@ -172,7 +174,7 @@ const Dashboard = () => {
       <div className="flex">
         <div className="card" style={{ flex: 1 }}>
           <Market
-            prices={prices}
+            prices={marketData}
             balance={wallet.balance}
             holdings={wallet.holdings}
             onBuy={buyStock}
@@ -188,9 +190,9 @@ const Dashboard = () => {
       <div className="card">
         <Portfolio
           holdings={wallet.holdings}
-          prices={prices}
-          priceHistory={priceHistory}
-          refreshWallet={loadWallet}
+          prices={Object.fromEntries(
+            Object.entries(marketData).map(([k, v]) => [k, v.price])
+          )}
         />
       </div>
 
