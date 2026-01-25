@@ -66,6 +66,14 @@ const Dashboard = () => {
     }
   }, []);
 
+  const prices = useMemo(() => {
+    const map = {};
+    Object.entries(marketData).forEach(([symbol, data]) => {
+      map[symbol] = data.price;
+    });
+    return map;
+  }, [marketData]);
+
 
 
 
