@@ -19,6 +19,10 @@ import Analytics from "../components/Analytics";
 import EquityCurveChart from "../components/EquityCurveChart";
 import AllocationChart from "../components/AllocationChart";
 import RiskMeter from "../components/RiskMeter";
+import MarketMovers from "../components/MarketMovers";
+import TradeLeaders from "../components/TradeLeaders";
+
+
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -27,6 +31,8 @@ const Dashboard = () => {
   const [prices, setPrices] = useState({});
   const [equityCurve, setEquityCurve] = useState([]);
   const [priceHistory, setPriceHistory] = useState({});
+  const [marketData, setMarketData] = useState({});
+
 
   // ================= LOAD WALLET =================
   const loadWallet = useCallback(async () => {
@@ -49,18 +55,11 @@ const Dashboard = () => {
         setPriceHistory((prevHistory) => {
           const updatedHistory = { ...prevHistory };
 
-          res.data.forEach((stock) => {
-            updatedPrices[stock.symbol] = stock.price;
-
-            if (!updatedHistory[stock.symbol]) {
-              updatedHistory[stock.symbol] = [];
-            }
-
-            updatedHistory[stock.symbol] = [
-              ...updatedHistory[stock.symbol],
-              stock.price
-            ].slice(-10); // keep last 10 prices
+          res.data.forEach(stock => {
+            priceMap[stock.symbol] = stock; // store full object
           });
+          setMarketData(prev => ({ ...prev, ...priceMap }));
+
 
           return updatedHistory;
         });
@@ -155,6 +154,10 @@ const Dashboard = () => {
       </div>
 
       <div className="card">
+        <MarketMovers prices={marketData} />
+      </div>
+
+      <div className="card">
         <h3>Live Portfolio P/L</h3>
         <p
           style={{
@@ -209,6 +212,7 @@ const Dashboard = () => {
 
       <div className="card">
         <Analytics />
+        <TradeLeaders />
         <EquityCurveChart data={equityCurve} />
       </div>
 
