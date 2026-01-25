@@ -30,4 +30,3 @@ const Market = ({ prices = {}, onBuy, balance = 0 }) => {
 };
 
 export default Market;
-
