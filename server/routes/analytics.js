@@ -46,39 +46,51 @@ router.get("/", auth, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const trades = user.tradeHistory || [];
+    const trades = user.tradeHistory.filter(t => t.type === "SELL");
 
     let wins = 0;
     let losses = 0;
+    let totalWinAmount = 0;
+    let totalLossAmount = 0;
     let totalPL = 0;
-    let equity = 100000;
-
-    const equityCurve = [];
-    const returns = [];
 
     trades.forEach(t => {
       const pl = Number(t.pl) || 0;
-
       totalPL += pl;
-      equity += pl;
 
-      equityCurve.push(equity);
-      returns.push(pl);
-
-      if (pl > 0) wins++;
-      else if (pl < 0) losses++;
+      if (pl > 0) {
+        wins++;
+        totalWinAmount += pl;
+      } else if (pl < 0) {
+        losses++;
+        totalLossAmount += Math.abs(pl);
+      }
     });
 
+    const totalTrades = trades.length;
+    const winRate = totalTrades ? (wins / totalTrades) * 100 : 0;
+
+    const avgWin = wins ? totalWinAmount / wins : 0;
+    const avgLoss = losses ? totalLossAmount / losses : 0;
+
+    const riskReward = avgLoss ? avgWin / avgLoss : 0;
+    const profitFactor = totalLossAmount ? totalWinAmount / totalLossAmount : 0;
+
+    const expectancy = totalTrades
+      ? ((winRate / 100) * avgWin) - ((1 - winRate / 100) * avgLoss)
+      : 0;
+
     res.json({
-      totalTrades: trades.length,
+      totalTrades,
       wins,
       losses,
-      winRate: trades.length
-        ? ((wins / trades.length) * 100).toFixed(2)
-        : "0.00",
+      winRate: winRate.toFixed(2),
       totalPL: totalPL.toFixed(2),
-      maxDrawdown: calculateMaxDrawdown(equityCurve),
-      sharpeRatio: calculateSharpe(returns)
+      avgWin: avgWin.toFixed(2),
+      avgLoss: avgLoss.toFixed(2),
+      riskReward: riskReward.toFixed(2),
+      profitFactor: profitFactor.toFixed(2),
+      expectancy: expectancy.toFixed(2)
     });
 
   } catch (err) {
@@ -86,6 +98,7 @@ router.get("/", auth, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 /* ================================
    EQUITY CURVE
