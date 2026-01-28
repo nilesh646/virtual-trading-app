@@ -5,8 +5,11 @@ console.log("🔥 JWT_SECRET FROM ENV:", process.env.JWT_SECRET);
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const { startAutoTrader } = require("./services/autoTrader");
-startAutoTrader();
+const { runAutoTrader } = require("./services/autoTrader");
+
+// Run every 10 seconds
+setInterval(runAutoTrader, 10000);
+
 
 
 const app = express();

@@ -1,54 +1,72 @@
 const User = require("../models/User");
 const { getStockPrice } = require("./marketService");
 
-const autoSell = async (user, holding, sellPrice, reason) => {
-  const quantity = holding.quantity;
-  const pl = (sellPrice - holding.avgPrice) * quantity;
+const runAutoTrader = async () => {
+  console.log("🤖 AutoTrader running...");
 
-  user.balance += sellPrice * quantity;
+  try {
+    const users = await User.find({ "holdings.0": { $exists: true } });
 
-  user.tradeHistory.push({
-    type: "SELL",
-    symbol: holding.symbol,
-    quantity,
-    price: sellPrice,
-    pl,
-    date: new Date(),
-    note: reason
-  });
+    for (const user of users) {
+      for (const holding of user.holdings) {
+        const { symbol, quantity, avgPrice } = holding;
 
-  user.holdings = user.holdings.filter(h => h.symbol !== holding.symbol);
+        const latestTrade = [...user.tradeHistory]
+          .reverse()
+          .find(t => t.symbol === symbol && t.type === "BUY");
 
-  await user.save();
+        if (!latestTrade) continue;
 
-  console.log(`AUTO SELL executed for ${holding.symbol} due to ${reason}`);
-};
+        const { stopLoss, takeProfit } = latestTrade;
 
-const startAutoTrader = () => {
-  setInterval(async () => {
-    try {
-      const users = await User.find();
+        if (!stopLoss && !takeProfit) continue;
 
-      for (const user of users) {
-        for (const holding of user.holdings) {
-          const stock = await getStockPrice(holding.symbol);
-          if (!stock) continue;
+        const stock = await getStockPrice(symbol);
+        if (!stock) continue;
 
-          const price = stock.price;
+        const currentPrice = stock.price;
 
-          if (holding.stopLoss && price <= holding.stopLoss) {
-            await autoSell(user, holding, price, "STOP LOSS");
-          }
+        let shouldSell = false;
+        let reason = "";
 
-          else if (holding.takeProfit && price >= holding.takeProfit) {
-            await autoSell(user, holding, price, "TAKE PROFIT");
-          }
+        if (stopLoss && currentPrice <= stopLoss) {
+          shouldSell = true;
+          reason = "Stop Loss Hit";
         }
+
+        if (takeProfit && currentPrice >= takeProfit) {
+          shouldSell = true;
+          reason = "Take Profit Hit";
+        }
+
+        if (!shouldSell) continue;
+
+        const proceeds = currentPrice * quantity;
+        const pl = (currentPrice - avgPrice) * quantity;
+
+        user.balance += proceeds;
+
+        user.holdings = user.holdings.filter(h => h.symbol !== symbol);
+
+        user.tradeHistory.push({
+          type: "SELL",
+          symbol,
+          quantity,
+          price: currentPrice,
+          pl,
+          reason,
+          date: new Date()
+        });
+
+        console.log(`📉 Auto SOLD ${symbol} for user ${user._id} (${reason})`);
       }
-    } catch (err) {
-      console.error("AutoTrader Error:", err.message);
+
+      await user.save();
     }
-  }, 8000); // every 8 seconds
+
+  } catch (err) {
+    console.error("AutoTrader Error:", err.message);
+  }
 };
 
-module.exports = { startAutoTrader };
+module.exports = { runAutoTrader };

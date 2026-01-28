@@ -45,18 +45,32 @@ const History = () => {
             <br />
             Qty: {trade.quantity}
             <br />
-            Price: ₹{trade.price}
+            Price: ₹{Number(trade.price).toFixed(2)}
             <br />
 
+            {/* 💰 Show P/L only for SELL trades */}
             {trade.type === "SELL" && (
               <span
                 style={{
-                  color: pl >= 0 ? "green" : "red",
+                  color: pl >= 0 ? "#00c853" : "#ff5252",
                   fontWeight: "bold"
                 }}
               >
                 Realized P/L: ₹{pl.toFixed(2)}
               </span>
+            )}
+
+            {/* 🤖 AutoTrader Trigger Reason */}
+            {trade.reason && (
+              <div
+                style={{
+                  color: "#ff9800",
+                  fontWeight: "bold",
+                  marginTop: "4px"
+                }}
+              >
+                Trigger: {trade.reason}
+              </div>
             )}
 
             <br />
@@ -66,7 +80,7 @@ const History = () => {
         );
       })}
 
-      <h4 style={{ color: totalRealizedPL >= 0 ? "green" : "red" }}>
+      <h4 style={{ color: totalRealizedPL >= 0 ? "#00c853" : "#ff5252" }}>
         Total Realized P/L: ₹{totalRealizedPL.toFixed(2)}
       </h4>
     </div>
