@@ -1,30 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");   // ✅ CommonJS
+const { getStockPrice } = require("../services/marketService");
 
-// Example market route
+const symbols = ["AAPL", "TSLA", "MSFT", "AMZN", "GOOGL"];
+
 router.get("/", async (req, res) => {
   try {
-    const stocks = ["AAPL", "TSLA", "MSFT"];
-
-    const results = await Promise.all(
-      stocks.map(async (symbol) => {
-        const response = await axios.get(
-          `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`
-        );
-
-        return {
-          symbol,
-          price: response.data.c
-        };
-      })
+    const prices = await Promise.all(
+      symbols.map(symbol => getStockPrice(symbol))
     );
 
-    res.json(results);
+    const filtered = prices.filter(Boolean); // remove nulls
+
+    res.json(filtered);
   } catch (err) {
-    console.error("Market route error:", err.message);
-    res.status(500).json({ error: "Market data failed" });
+    console.error("MARKET ROUTE ERROR:", err.message);
+    res.status(500).json({ error: "Market fetch failed" });
   }
 });
 
-module.exports = router;   // ✅ CommonJS export
+module.exports = router;
