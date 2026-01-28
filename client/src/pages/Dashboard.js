@@ -153,11 +153,11 @@ const Dashboard = () => {
     }, 0);
   }, [wallet, prices]);
 
-  const interval = setInterval(() => {
-    loadPrices();
-    loadWallet();
-    api.post("/api/trade/auto-sell-check"); // 🔥 AUTO SELL ENGINE
-  }, 5000);
+  // const interval = setInterval(() => {
+  //   loadPrices();
+  //   loadWallet();
+  //   api.post("/api/trade/auto-sell-check"); // 🔥 AUTO SELL ENGINE
+  // }, 5000);
 
 
   // ================= GUARDS =================
