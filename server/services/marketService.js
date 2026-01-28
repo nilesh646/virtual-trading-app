@@ -1,40 +1,36 @@
 const axios = require("axios");
-
 const API_KEY = process.env.FINNHUB_API_KEY;
 
-// store last price to make smooth movement
-const lastPrices = {};
+const cache = {}; // { symbol: { price, time } }
+const CACHE_DURATION = 5000; // 5 seconds
 
 const getStockPrice = async (symbol) => {
+  const now = Date.now();
+
+  // Return cached if still fresh
+  if (cache[symbol] && now - cache[symbol].time < CACHE_DURATION) {
+    return cache[symbol].data;
+  }
+
   try {
     const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`;
     const res = await axios.get(url);
 
-    if (!res.data || !res.data.c) return null;
+    const price = res.data.c;
+    if (!price) return null;
 
-    let basePrice = Number(res.data.c);
+    const stock = { symbol, price };
 
-    // 🔥 If we already have a price, fluctuate from that instead
-    if (lastPrices[symbol]) {
-      basePrice = lastPrices[symbol];
-    }
-
-    // Add small live fluctuation ±0.5%
-    const changePercent = (Math.random() - 0.5) * 0.01;
-    const newPrice = basePrice * (1 + changePercent);
-
-    lastPrices[symbol] = Number(newPrice.toFixed(2));
-
-    return {
-      symbol,
-      price: lastPrices[symbol]
+    cache[symbol] = {
+      data: stock,
+      time: now,
     };
 
+    return stock;
   } catch (err) {
     console.error("Market API error:", err.message);
-    return null;
+    return cache[symbol]?.data || null;
   }
 };
 
 module.exports = { getStockPrice };
-
