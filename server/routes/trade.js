@@ -8,7 +8,7 @@ const { getStockPrice } = require("../services/marketService");
 // ===================== BUY =====================
 router.post("/buy", auth, async (req, res) => {
   try {
-    const { symbol, quantity } = req.body;
+    const { symbol, quantity, stopLoss, takeProfit } = req.body;
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -18,30 +18,23 @@ router.post("/buy", auth, async (req, res) => {
 
     const totalCost = stock.price * quantity;
 
-    if (user.balance < totalCost) {
+    if (user.balance < totalCost)
       return res.status(400).json({ error: "Insufficient balance" });
-    }
 
     user.balance -= totalCost;
-
-    // 🎯 Auto risk management levels
-    const stopLoss = stock.price * 0.95;     // 5% below buy price
-    const takeProfit = stock.price * 1.10;   // 10% above buy price
 
     const existing = user.holdings.find(h => h.symbol === symbol);
 
     if (existing) {
       const totalQty = existing.quantity + quantity;
-
       existing.avgPrice =
         (existing.avgPrice * existing.quantity + stock.price * quantity) /
         totalQty;
-
       existing.quantity = totalQty;
 
-      // Update SL/TP to latest levels
-      existing.stopLoss = stopLoss;
-      existing.takeProfit = takeProfit;
+      // 🔥 Save risk controls
+      if (stopLoss) existing.stopLoss = stopLoss;
+      if (takeProfit) existing.takeProfit = takeProfit;
 
     } else {
       user.holdings.push({
@@ -63,14 +56,14 @@ router.post("/buy", auth, async (req, res) => {
     });
 
     await user.save();
-
-    res.json({ message: "Stock bought successfully" });
+    res.json({ message: "Stock bought with risk controls" });
 
   } catch (err) {
     console.error("BUY ERROR:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 // ===================== MANUAL SELL =====================
@@ -117,6 +110,64 @@ router.post("/sell", auth, async (req, res) => {
 
   } catch (err) {
     console.error("SELL ERROR:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// 🔥 AUTO SELL CHECKER
+router.post("/auto-sell-check", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    for (const holding of user.holdings) {
+      const stock = await getStockPrice(holding.symbol);
+      if (!stock) continue;
+
+      const currentPrice = stock.price;
+
+      // STOP LOSS
+      if (holding.stopLoss && currentPrice <= holding.stopLoss) {
+        const pl = (currentPrice - holding.avgPrice) * holding.quantity;
+        user.balance += currentPrice * holding.quantity;
+
+        user.tradeHistory.push({
+          type: "SELL (Stop Loss)",
+          symbol: holding.symbol,
+          quantity: holding.quantity,
+          price: currentPrice,
+          pl,
+          date: new Date()
+        });
+
+        holding.quantity = 0;
+      }
+
+      // TAKE PROFIT
+      else if (holding.takeProfit && currentPrice >= holding.takeProfit) {
+        const pl = (currentPrice - holding.avgPrice) * holding.quantity;
+        user.balance += currentPrice * holding.quantity;
+
+        user.tradeHistory.push({
+          type: "SELL (Take Profit)",
+          symbol: holding.symbol,
+          quantity: holding.quantity,
+          price: currentPrice,
+          pl,
+          date: new Date()
+        });
+
+        holding.quantity = 0;
+      }
+    }
+
+    user.holdings = user.holdings.filter(h => h.quantity > 0);
+    await user.save();
+
+    res.json({ message: "Auto sell check complete" });
+
+  } catch (err) {
+    console.error("AUTO SELL ERROR:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

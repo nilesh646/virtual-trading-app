@@ -89,9 +89,15 @@ const Dashboard = () => {
 
   // ================= BUY =================
   const buyStock = useCallback(
-    async (symbol) => {
+    async (symbol, risk = {}) => {
       try {
-        await api.post("/api/trade/buy", { symbol, quantity: 1 });
+        await api.post("/api/trade/buy", {
+          symbol,
+          quantity: 1,
+          stopLoss: risk.stopLoss,
+          takeProfit: risk.takeProfit
+        });
+
         toast.success(`Bought 1 ${symbol}`);
         await loadWallet();
         await loadPrices();
@@ -102,6 +108,7 @@ const Dashboard = () => {
     },
     [loadWallet, loadPrices, loadEquityCurve]
   );
+
 
   // ================= SELL =================
   const sellStock = useCallback(
@@ -145,6 +152,13 @@ const Dashboard = () => {
       return sum + (currentPrice - h.avgPrice) * h.quantity;
     }, 0);
   }, [wallet, prices]);
+
+  const interval = setInterval(() => {
+    loadPrices();
+    loadWallet();
+    api.post("/api/trade/auto-sell-check"); // 🔥 AUTO SELL ENGINE
+  }, 5000);
+
 
   // ================= GUARDS =================
   if (!token) return null;
