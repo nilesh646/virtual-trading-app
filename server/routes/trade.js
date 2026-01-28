@@ -8,7 +8,8 @@ const { getStockPrice } = require("../services/marketService");
 // ===================== BUY =====================
 router.post("/buy", auth, async (req, res) => {
   try {
-    const { symbol, quantity, stopLoss, takeProfit } = req.body;
+    const { symbol, quantity, stopLoss = null, takeProfit = null } = req.body;
+
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -51,9 +52,12 @@ router.post("/buy", auth, async (req, res) => {
       symbol,
       quantity,
       price: stock.price,
+      stopLoss,
+      takeProfit,
       pl: 0,
       date: new Date()
     });
+
 
     await user.save();
     res.json({ message: "Stock bought with risk controls" });

@@ -88,18 +88,27 @@ const Dashboard = () => {
   }, []);
 
   // ================= BUY =================
-  const buyStock = useCallback(async (symbol, stopLoss, takeProfit) => {
-    await api.post("/api/trade/buy", {
-      symbol,
-      quantity: 1,
-      stopLoss,
-      takeProfit
-    });
-    toast.success(`Bought ${symbol}`);
-    loadWallet();
-    loadPrices();
-    loadEquityCurve();
-  }, [loadWallet, loadPrices, loadEquityCurve]);
+  const buyStock = useCallback(
+    async (symbol, stopLoss = null, takeProfit = null) => {
+      try {
+        await api.post("/api/trade/buy", {
+          symbol,
+          quantity: 1,
+          stopLoss,
+          takeProfit
+        });
+
+        toast.success(`Bought 1 ${symbol}`);
+        await loadWallet();
+        await loadPrices();
+        await loadEquityCurve();
+      } catch (err) {
+        toast.error(err.response?.data?.error || "Buy failed");
+      }
+    },
+    [loadWallet, loadPrices, loadEquityCurve]
+  );
+
 
 
 
