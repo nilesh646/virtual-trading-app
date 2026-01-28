@@ -4,9 +4,22 @@ const API_KEY = process.env.FINNHUB_API_KEY;
 const cache = {};
 const CACHE_DURATION = 5000; // 5 seconds
 
+// 🔥 GLOBAL MARKET TREND (affects all stocks together)
+let marketTrend = 0;
+
+// Market direction changes every 30 seconds
+setInterval(() => {
+  marketTrend = (Math.random() - 0.5) * 0.01; // -0.5% to +0.5%
+  console.log("📈 Market trend updated:", marketTrend.toFixed(4));
+}, 30000);
+
+// Store last simulated prices so movement continues smoothly
+const lastPrices = {};
+
 const getStockPrice = async (symbol) => {
   const now = Date.now();
 
+  // Return cached price if still valid
   if (cache[symbol] && now - cache[symbol].time < CACHE_DURATION) {
     return cache[symbol].data;
   }
@@ -16,14 +29,23 @@ const getStockPrice = async (symbol) => {
     const res = await axios.get(url);
 
     let basePrice = res.data.c;
-
     if (!basePrice || basePrice === 0) return cache[symbol]?.data || null;
 
-    // 🔥 ADD LIVE MOVEMENT
-    const fluctuation = (Math.random() - 0.5) * (basePrice * 0.01); // ±1%
-    const livePrice = parseFloat((basePrice + fluctuation).toFixed(2));
+    // Initialize last price if not present
+    if (!lastPrices[symbol]) {
+      lastPrices[symbol] = basePrice;
+    }
 
-    const stock = { symbol, price: livePrice };
+    // 🔥 REALISTIC MOVEMENT
+    const randomNoise = (Math.random() - 0.5) * 0.01; // individual stock movement ±1%
+    const changePercent = marketTrend + randomNoise;
+
+    const newPrice = lastPrices[symbol] * (1 + changePercent);
+    const simulatedPrice = Number(newPrice.toFixed(2));
+
+    lastPrices[symbol] = simulatedPrice;
+
+    const stock = { symbol, price: simulatedPrice };
 
     cache[symbol] = {
       data: stock,
