@@ -9,12 +9,10 @@ const Portfolio = ({
   priceHistory = {},
   refreshWallet,
 }) => {
-
   const [noteInputs, setNoteInputs] = useState({});
-  const [tagInputs, setTagInputs] = useState({});
+  const [tagInputs, setTagInputs] = useState({}); // ✅ per-stock tags
 
   if (!holdings.length) return <p>No holdings</p>;
-
   if (!prices || Object.keys(prices).length === 0)
     return <p>Loading prices...</p>;
 
@@ -24,20 +22,22 @@ const Portfolio = ({
         symbol,
         quantity: 1,
         notes: noteInputs[symbol] || "",
-        tags: tagInputs[symbol]?.split(",").map(t => t.trim()) || []
+        tags: (tagInputs[symbol] || "")
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
       });
 
       toast.success(`Sold 1 ${symbol}`);
       refreshWallet();
 
-      setNoteInputs(prev => ({ ...prev, [symbol]: "" }));
-      setTagInputs(prev => ({ ...prev, [symbol]: "" }));
-
+      // Clear inputs after sell
+      setNoteInputs((prev) => ({ ...prev, [symbol]: "" }));
+      setTagInputs((prev) => ({ ...prev, [symbol]: "" }));
     } catch (err) {
       toast.error(err.response?.data?.error || "Sell failed");
     }
   };
-
 
   const rows = holdings
     .map((h) => {
@@ -49,7 +49,6 @@ const Portfolio = ({
       const pl = current - invested;
       const percent = invested !== 0 ? (pl / invested) * 100 : 0;
 
-      // 🎯 Risk Levels
       const stopLoss = h.stopLoss || h.avgPrice * 0.95;
       const takeProfit = h.takeProfit || h.avgPrice * 1.1;
 
@@ -62,8 +61,8 @@ const Portfolio = ({
     (sum, r) => sum + r.quantity * r.avgPrice,
     0
   );
-  const totalPercent = totalInvested !== 0 ? (totalPL / totalInvested) * 100 : 0;
-
+  const totalPercent =
+    totalInvested !== 0 ? (totalPL / totalInvested) * 100 : 0;
 
   return (
     <div>
@@ -80,10 +79,8 @@ const Portfolio = ({
           Current Price: ₹{h.price.toFixed(2)}
           <br />
 
-          {/* 📈 Mini Trend */}
           <Sparkline data={priceHistory[h.symbol] || []} />
 
-          {/* 💰 Profit/Loss */}
           <span
             style={{
               color: h.pl >= 0 ? "#00c853" : "#ff5252",
@@ -95,29 +92,38 @@ const Portfolio = ({
 
           <br />
 
-          {/* 🛑 Stop Loss & 🎯 Take Profit */}
           <div style={{ fontSize: "0.9rem", marginTop: "4px" }}>
             <span style={{ color: "#ff5252" }}>
               SL: ₹{h.stopLoss.toFixed(2)}
-            </span>
-            {" | "}
+            </span>{" "}
+            |{" "}
             <span style={{ color: "#00c853" }}>
               TP: ₹{h.takeProfit.toFixed(2)}
             </span>
           </div>
+
           <textarea
             placeholder="Trade notes..."
             value={noteInputs[h.symbol] || ""}
             onChange={(e) =>
-              setNoteInputs({ ...noteInputs, [h.symbol]: e.target.value })
+              setNoteInputs((prev) => ({
+                ...prev,
+                [h.symbol]: e.target.value,
+              }))
             }
+            style={{ width: "100%", marginTop: "6px" }}
           />
 
           <input
             type="text"
             placeholder="Tags (e.g. breakout, news)"
-            value={tagInputs}
-            onChange={(e) => setTagInputs(e.target.value)}
+            value={tagInputs[h.symbol] || ""}   
+            onChange={(e) =>
+              setTagInputs((prev) => ({
+                ...prev,
+                [h.symbol]: e.target.value,
+              }))
+            }
             style={{ marginTop: "6px", width: "100%" }}
           />
 
