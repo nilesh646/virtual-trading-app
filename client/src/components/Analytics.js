@@ -25,6 +25,13 @@ const Analytics = () => {
       ? "#ff9100"
       : "#00c853";
 
+  const qualityColor =
+    data.strategyQuality === "PRO"
+      ? "#00c853"
+      : data.strategyQuality === "GOOD"
+      ? "#ff9100"
+      : "#ff5252";
+
   return (
     <div>
       <h3>Performance & Risk Analytics</h3>
@@ -34,7 +41,8 @@ const Analytics = () => {
       <p>Losses: <strong style={{ color: "#ff5252" }}>{data.losses}</strong></p>
       <p>Win Rate: <strong>{data.winRate}%</strong></p>
 
-      <p>Total P/L:
+      <p>
+        Total P/L:
         <strong style={{ color: data.totalPL >= 0 ? "#00c853" : "#ff5252" }}>
           ₹{data.totalPL}
         </strong>
@@ -49,6 +57,16 @@ const Analytics = () => {
       <p>
         ⚠ Risk Level:
         <strong style={{ color: riskColor }}> {data.riskLevel}</strong>
+      </p>
+
+      <hr />
+
+      <p>📊 Volatility: <strong>{data.volatility}%</strong></p>
+      <p>⭐ Sharpe Ratio: <strong>{data.sharpeRatio}</strong></p>
+
+      <p>
+        🧠 Strategy Quality:
+        <strong style={{ color: qualityColor }}> {data.strategyQuality}</strong>
       </p>
     </div>
   );
