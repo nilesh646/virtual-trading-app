@@ -90,6 +90,33 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+router.get("/equity-curve", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    let equity = 100000;
+    const curve = [];
+
+    user.tradeHistory.forEach((trade, i) => {
+      const pl = Number(trade.pl || 0);
+      equity += pl;
+
+      curve.push({
+        index: i + 1,
+        equity: Number(equity.toFixed(2)),
+        date: trade.date
+      });
+    });
+
+    res.json(curve);
+  } catch (err) {
+    console.error("Equity curve error:", err);
+    res.status(500).json({ error: "Equity curve error" });
+  }
+});
+
+
 // ================================
 // STRATEGY PERFORMANCE (TAGS)
 // GET /api/analytics/strategies
