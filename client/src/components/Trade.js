@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 const Trade = ({ refreshWallet }) => {
   const [symbol, setSymbol] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(false);
 
   const sellStock = async () => {
@@ -23,17 +25,21 @@ const Trade = ({ refreshWallet }) => {
 
       await api.post("/api/trade/sell", {
         symbol,
-        quantity
+        quantity,
+        notes,
+        tags: tags.split(",").map(t => t.trim()).filter(Boolean)
       });
 
       toast.success("Stock sold successfully!");
 
-      // 🔥 Refresh wallet + portfolio
       await refreshWallet();
 
-      // 🔥 Reset form
+      // Reset form
       setSymbol("");
       setQuantity(1);
+      setNotes("");
+      setTags("");
+
     } catch (err) {
       toast.error(err.response?.data?.error || "Sell failed");
     } finally {
@@ -58,9 +64,27 @@ const Trade = ({ refreshWallet }) => {
         onChange={(e) => setQuantity(Number(e.target.value))}
       />
 
+      {/* 📝 Notes */}
+      <textarea
+        placeholder="Trade notes (why you sold)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        style={{ marginTop: "6px", width: "100%" }}
+      />
+
+      {/* 🏷 Tags */}
+      <input
+        type="text"
+        placeholder="Tags (breakout, news, scalp)"
+        value={tags}
+        onChange={(e) => setTags(e.target.value)}
+        style={{ marginTop: "6px", width: "100%" }}
+      />
+
       <button
         onClick={sellStock}
         disabled={loading || !symbol || quantity <= 0}
+        style={{ marginTop: "8px" }}
       >
         {loading ? "Processing..." : "Sell"}
       </button>
