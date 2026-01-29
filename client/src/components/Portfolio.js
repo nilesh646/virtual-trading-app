@@ -1,3 +1,4 @@
+import { useState } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
 import Sparkline from "./Sparkline";
@@ -15,13 +16,24 @@ const Portfolio = ({
 
   const sellOne = async (symbol) => {
     try {
-      await api.post("/api/trade/sell", { symbol, quantity: 1 });
+      await api.post("/api/trade/sell", {
+        symbol,
+        quantity: 1,
+        notes: noteInputs[symbol] || "",
+        tags: tagInputs[symbol]?.split(",").map(t => t.trim()) || []
+      });
+
       toast.success(`Sold 1 ${symbol}`);
       refreshWallet();
+
+      setNoteInputs(prev => ({ ...prev, [symbol]: "" }));
+      setTagInputs(prev => ({ ...prev, [symbol]: "" }));
+
     } catch (err) {
       toast.error(err.response?.data?.error || "Sell failed");
     }
   };
+
 
   const rows = holdings
     .map((h) => {
@@ -47,6 +59,9 @@ const Portfolio = ({
     0
   );
   const totalPercent = totalInvested !== 0 ? (totalPL / totalInvested) * 100 : 0;
+  const [noteInputs, setNoteInputs] = useState({});
+  const [tagInputs, setTagInputs] = useState({});
+
 
   return (
     <div>
@@ -88,6 +103,21 @@ const Portfolio = ({
               TP: ₹{h.takeProfit.toFixed(2)}
             </span>
           </div>
+          <textarea
+            placeholder="Trade notes..."
+            value={noteInputs[h.symbol] || ""}
+            onChange={(e) =>
+              setNoteInputs({ ...noteInputs, [h.symbol]: e.target.value })
+            }
+          />
+
+          <input
+            placeholder="Tags (breakout, scalp)"
+            value={tagInputs[h.symbol] || ""}
+            onChange={(e) =>
+              setTagInputs({ ...tagInputs, [h.symbol]: e.target.value })
+            }
+          />
 
           <br />
           <button onClick={() => sellOne(h.symbol)}>Sell 1</button>

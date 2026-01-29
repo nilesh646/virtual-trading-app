@@ -73,6 +73,26 @@ const History = () => {
               </div>
             )}
 
+            {trade.notes && (
+              <p><strong>Notes:</strong> {trade.notes}</p>
+            )}
+
+            {trade.tags && trade.tags.length > 0 && (
+              <p>
+                <strong>Tags:</strong> {trade.tags.map((t, i) => (
+                  <span key={i} style={{
+                    background: "#333",
+                    color: "#fff",
+                    padding: "2px 6px",
+                    marginRight: "5px",
+                    borderRadius: "4px"
+                  }}>
+                    {t}
+                  </span>
+                ))}
+              </p>
+            )}
+
             <br />
             <small>{new Date(trade.date).toLocaleString()}</small>
             <hr />
