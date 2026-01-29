@@ -212,6 +212,41 @@ router.get("/strategy-curve", auth, async (req, res) => {
   }
 });
 
+router.get("/strategy-performance", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const sells = user.tradeHistory.filter(t => t.type === "SELL" && t.tags?.length);
+
+    const strategyMap = {};
+
+    sells.forEach(trade => {
+      trade.tags.forEach(tag => {
+        if (!strategyMap[tag]) {
+          strategyMap[tag] = { trades: 0, wins: 0, totalPL: 0 };
+        }
+
+        strategyMap[tag].trades += 1;
+        strategyMap[tag].totalPL += trade.pl;
+        if (trade.pl > 0) strategyMap[tag].wins += 1;
+      });
+    });
+
+    const result = Object.entries(strategyMap).map(([tag, data]) => ({
+      strategy: tag,
+      trades: data.trades,
+      winRate: data.trades ? (data.wins / data.trades) * 100 : 0,
+      totalPL: data.totalPL
+    }));
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Strategy analytics error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 module.exports = router;
