@@ -116,8 +116,8 @@ const Portfolio = ({
           <input
             type="text"
             placeholder="Tags (e.g. breakout, news)"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
+            value={tagInputs}
+            onChange={(e) => setTagInputs(e.target.value)}
             style={{ marginTop: "6px", width: "100%" }}
           />
 
