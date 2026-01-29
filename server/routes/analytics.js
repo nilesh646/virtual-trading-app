@@ -144,5 +144,47 @@ router.get("/strategies", auth, async (req, res) => {
   }
 });
 
+// ======================================
+// EQUITY CURVE PER STRATEGY (TAG)
+// GET /api/analytics/strategy-curve
+// ======================================
+router.get("/strategy-curve", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory || [];
+
+    const curves = {};
+
+    trades.forEach(trade => {
+      if (trade.type !== "SELL") return;
+      if (!trade.tags || trade.tags.length === 0) return;
+
+      const pl = Number(trade.pl || 0);
+
+      trade.tags.forEach(tag => {
+        if (!curves[tag]) {
+          curves[tag] = { equity: 100000, data: [] }; // start capital
+        }
+
+        curves[tag].equity += pl;
+
+        curves[tag].data.push({
+          date: trade.date,
+          equity: Number(curves[tag].equity.toFixed(2))
+        });
+      });
+    });
+
+    res.json(curves);
+
+  } catch (err) {
+    console.error("Strategy curve error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 module.exports = router;
