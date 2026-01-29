@@ -9,6 +9,10 @@ const Portfolio = ({
   priceHistory = {},
   refreshWallet,
 }) => {
+
+  const [noteInputs, setNoteInputs] = useState({});
+  const [tagInputs, setTagInputs] = useState({});
+
   if (!holdings.length) return <p>No holdings</p>;
 
   if (!prices || Object.keys(prices).length === 0)
@@ -59,8 +63,6 @@ const Portfolio = ({
     0
   );
   const totalPercent = totalInvested !== 0 ? (totalPL / totalInvested) * 100 : 0;
-  const [noteInputs, setNoteInputs] = useState({});
-  const [tagInputs, setTagInputs] = useState({});
 
 
   return (
