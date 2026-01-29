@@ -23,6 +23,7 @@ import MarketMovers from "../components/MarketMovers";
 import TradeLeaders from "../components/TradeLeaders";
 import StrategyPerformance from "../components/StrategyPerformance";
 import StrategyEquityCurves from "../components/StrategyEquityCurves";
+import StrategyStats from "../components/StrategyStats";
 
 
 const Dashboard = () => {
@@ -238,6 +239,10 @@ const Dashboard = () => {
         <Analytics />
         <TradeLeaders />
         <EquityCurveChart data={equityCurve} />
+      </div>
+
+      <div className="card">
+        <StrategyStats />
       </div>
 
       <div className="card">
