@@ -18,15 +18,23 @@ const Analytics = () => {
 
   if (!data) return <p>Loading analytics...</p>;
 
+  const riskColor =
+    data.riskLevel === "HIGH"
+      ? "#ff1744"
+      : data.riskLevel === "MEDIUM"
+      ? "#ff9100"
+      : "#00c853";
+
   return (
     <div>
-      <h3>Performance Analytics</h3>
+      <h3>Performance & Risk Analytics</h3>
 
       <p>Total Trades: <strong>{data.totalTrades}</strong></p>
       <p>Wins: <strong style={{ color: "#00c853" }}>{data.wins}</strong></p>
       <p>Losses: <strong style={{ color: "#ff5252" }}>{data.losses}</strong></p>
       <p>Win Rate: <strong>{data.winRate}%</strong></p>
-      <p>Total P/L: 
+
+      <p>Total P/L:
         <strong style={{ color: data.totalPL >= 0 ? "#00c853" : "#ff5252" }}>
           ₹{data.totalPL}
         </strong>
@@ -34,14 +42,14 @@ const Analytics = () => {
 
       <hr />
 
-      <p>🏆 Best Trade: <strong style={{ color: "#00c853" }}>₹{data.bestTrade}</strong></p>
-      <p>💀 Worst Trade: <strong style={{ color: "#ff5252" }}>₹{data.worstTrade}</strong></p>
+      <p>📉 Max Drawdown: <strong style={{ color: "#ff5252" }}>{data.maxDrawdown}%</strong></p>
+      <p>📊 Current Drawdown: <strong>{data.currentDrawdown}%</strong></p>
+      <p>🏔 Equity Peak: <strong>₹{data.equityPeak}</strong></p>
 
-      <p>🔥 Max Win Streak: <strong>{data.maxWinStreak}</strong></p>
-      <p>🥶 Max Loss Streak: <strong>{data.maxLossStreak}</strong></p>
-
-      <p>📈 Avg Win: <strong style={{ color: "#00c853" }}>₹{data.avgWin}</strong></p>
-      <p>📉 Avg Loss: <strong style={{ color: "#ff5252" }}>₹{data.avgLoss}</strong></p>
+      <p>
+        ⚠ Risk Level:
+        <strong style={{ color: riskColor }}> {data.riskLevel}</strong>
+      </p>
     </div>
   );
 };
