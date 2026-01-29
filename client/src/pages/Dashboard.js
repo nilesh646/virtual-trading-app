@@ -21,6 +21,7 @@ import AllocationChart from "../components/AllocationChart";
 import RiskMeter from "../components/RiskMeter";
 import MarketMovers from "../components/MarketMovers";
 import TradeLeaders from "../components/TradeLeaders";
+import StrategyPerformance from "../components/StrategyPerformance";
 
 
 
@@ -237,6 +238,10 @@ const Dashboard = () => {
         <Analytics />
         <TradeLeaders />
         <EquityCurveChart data={equityCurve} />
+      </div>
+
+      <div className="card">
+        <StrategyPerformance />
       </div>
 
       <div className="card">
