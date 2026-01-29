@@ -114,11 +114,11 @@ const Portfolio = ({
           />
 
           <input
-            placeholder="Tags (breakout, scalp)"
-            value={tagInputs[h.symbol] || ""}
-            onChange={(e) =>
-              setTagInputs({ ...tagInputs, [h.symbol]: e.target.value })
-            }
+            type="text"
+            placeholder="Tags (e.g. breakout, news)"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            style={{ marginTop: "6px", width: "100%" }}
           />
 
           <br />

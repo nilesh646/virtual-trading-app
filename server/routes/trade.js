@@ -121,62 +121,56 @@ router.post("/sell", auth, async (req, res) => {
 
 
 // 🔥 AUTO SELL CHECKER
-router.post("/auto-sell-check", auth, async (req, res) => {
+// SELL STOCK
+router.post("/sell", auth, async (req, res) => {
   try {
+    const { symbol, quantity, tags = [] } = req.body; // ⭐ RECEIVE TAGS
+
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    for (const holding of user.holdings) {
-      const stock = await getStockPrice(holding.symbol);
-      if (!stock) continue;
-
-      const currentPrice = stock.price;
-
-      // STOP LOSS
-      if (holding.stopLoss && currentPrice <= holding.stopLoss) {
-        const pl = (currentPrice - holding.avgPrice) * holding.quantity;
-        user.balance += currentPrice * holding.quantity;
-
-        user.tradeHistory.push({
-          type: "SELL (Stop Loss)",
-          symbol: holding.symbol,
-          quantity: holding.quantity,
-          price: currentPrice,
-          pl,
-          date: new Date()
-        });
-
-        holding.quantity = 0;
-      }
-
-      // TAKE PROFIT
-      else if (holding.takeProfit && currentPrice >= holding.takeProfit) {
-        const pl = (currentPrice - holding.avgPrice) * holding.quantity;
-        user.balance += currentPrice * holding.quantity;
-
-        user.tradeHistory.push({
-          type: "SELL (Take Profit)",
-          symbol: holding.symbol,
-          quantity: holding.quantity,
-          price: currentPrice,
-          pl,
-          date: new Date()
-        });
-
-        holding.quantity = 0;
-      }
+    const holding = user.holdings.find(h => h.symbol === symbol);
+    if (!holding || holding.quantity < quantity) {
+      return res.status(400).json({ error: "Not enough shares to sell" });
     }
 
-    user.holdings = user.holdings.filter(h => h.quantity > 0);
+    const stock = await getStockPrice(symbol);
+    if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
+
+    const sellPrice = stock.price;
+    const buyPrice = holding.avgPrice;
+
+    const proceeds = sellPrice * quantity;
+    const pl = (sellPrice - buyPrice) * quantity;
+
+    user.balance += proceeds;
+
+    holding.quantity -= quantity;
+    if (holding.quantity === 0) {
+      user.holdings = user.holdings.filter(h => h.symbol !== symbol);
+    }
+
+    // ⭐ SAVE TAGS WITH TRADE
+    user.tradeHistory.push({
+      type: "SELL",
+      symbol,
+      quantity,
+      price: sellPrice,
+      pl,
+      tags,          // 🔥 STRATEGY TAGS SAVED
+      date: new Date()
+    });
+
     await user.save();
 
-    res.json({ message: "Auto sell check complete" });
+    res.json({ message: "Stock sold", pl });
 
   } catch (err) {
-    console.error("AUTO SELL ERROR:", err);
+    console.error("SELL ERROR:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 module.exports = router;
