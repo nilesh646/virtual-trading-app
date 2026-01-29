@@ -73,7 +73,7 @@ router.post("/buy", auth, async (req, res) => {
 // ===================== MANUAL SELL =====================
 router.post("/sell", auth, async (req, res) => {
   try {
-    const { symbol, quantity } = req.body;
+    const { symbol, quantity, notes, tags } = req.body;
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -88,28 +88,29 @@ router.post("/sell", auth, async (req, res) => {
 
     const sellPrice = stock.price;
     const buyPrice = holding.avgPrice;
-
     const proceeds = sellPrice * quantity;
     const pl = (sellPrice - buyPrice) * quantity;
 
     user.balance += proceeds;
-
     holding.quantity -= quantity;
+
     if (holding.quantity === 0) {
       user.holdings = user.holdings.filter(h => h.symbol !== symbol);
     }
 
+    // ⭐ SAVE NOTES + TAGS
     user.tradeHistory.push({
       type: "SELL",
       symbol,
       quantity,
       price: sellPrice,
       pl,
-      date: new Date()
+      date: new Date(),
+      notes: notes || "",
+      tags: tags || []
     });
 
     await user.save();
-
     res.json({ message: "Stock sold", pl });
 
   } catch (err) {
@@ -117,6 +118,7 @@ router.post("/sell", auth, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 // 🔥 AUTO SELL CHECKER
 router.post("/auto-sell-check", auth, async (req, res) => {
