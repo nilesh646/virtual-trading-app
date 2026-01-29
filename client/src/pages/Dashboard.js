@@ -22,7 +22,7 @@ import RiskMeter from "../components/RiskMeter";
 import MarketMovers from "../components/MarketMovers";
 import TradeLeaders from "../components/TradeLeaders";
 import StrategyPerformance from "../components/StrategyPerformance";
-
+import StrategyEquityCurves from "../components/StrategyEquityCurves";
 
 
 const Dashboard = () => {
@@ -242,6 +242,10 @@ const Dashboard = () => {
 
       <div className="card">
         <StrategyPerformance />
+      </div>
+
+      <div className="card">
+        <StrategyEquityCurves />
       </div>
 
       <div className="card">
