@@ -802,4 +802,57 @@ router.get("/risk-reward", auth, async (req, res) => {
 });
 
 
+// ===================== TRADE DURATION =====================
+router.get("/trade-duration", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const history = user.tradeHistory || [];
+
+    // Pair BUY and SELL trades by symbol (FIFO style)
+    const openTrades = {};
+    let winDurations = [];
+    let lossDurations = [];
+
+    history.forEach(trade => {
+      if (trade.type === "BUY") {
+        if (!openTrades[trade.symbol]) openTrades[trade.symbol] = [];
+        openTrades[trade.symbol].push(trade);
+      }
+
+      if (trade.type === "SELL" && openTrades[trade.symbol]?.length) {
+        const buyTrade = openTrades[trade.symbol].shift();
+
+        const buyTime = new Date(buyTrade.date).getTime();
+        const sellTime = new Date(trade.date).getTime();
+
+        const durationMinutes = (sellTime - buyTime) / (1000 * 60);
+
+        if (trade.pl > 0) winDurations.push(durationMinutes);
+        if (trade.pl < 0) lossDurations.push(durationMinutes);
+      }
+    });
+
+    const avgWin =
+      winDurations.length
+        ? (winDurations.reduce((a, b) => a + b, 0) / winDurations.length)
+        : 0;
+
+    const avgLoss =
+      lossDurations.length
+        ? (lossDurations.reduce((a, b) => a + b, 0) / lossDurations.length)
+        : 0;
+
+    res.json({
+      avgWinMinutes: avgWin.toFixed(1),
+      avgLossMinutes: avgLoss.toFixed(1)
+    });
+
+  } catch (err) {
+    console.error("Trade duration error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;
