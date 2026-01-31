@@ -29,7 +29,13 @@ router.get("/", auth, async (req, res) => {
 // 📥 EXPORT TRADE HISTORY AS CSV
 router.get("/export", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
+    const token = req.query.token;
+    if (!token) return res.status(401).send("No token");
+
+    const jwt = require("jsonwebtoken");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const trades = user.tradeHistory || [];
