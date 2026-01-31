@@ -30,6 +30,7 @@ import StrategyLeaderboard from "../components/StrategyLeaderboard";
 import MonthlyReport from "../components/MonthlyReport";
 import TradeExtremes from "../components/TradeExtremes";
 import DailyPLChart from "../components/DailyPLChart";
+import StreakStats from "../components/StreakStats";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -255,7 +256,7 @@ const Dashboard = () => {
       <div className="card">
         <TradeExtremes />
       </div>
-      
+
       <div className="card">
         <DailyPLChart />
       </div>
@@ -265,6 +266,10 @@ const Dashboard = () => {
         <TradeLeaders />
         <StrategyPerformanceChart />
         <EquityCurveChart data={equityCurve} />
+      </div>
+
+      <div className="card">
+        <StreakStats />
       </div>
 
       <div className="card">
