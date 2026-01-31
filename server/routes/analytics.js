@@ -358,5 +358,55 @@ router.get("/strategies", auth, async (req, res) => {
   }
 });
 
+/**
+ * =====================================
+ * MONTHLY PERFORMANCE
+ * GET /api/analytics/monthly
+ * =====================================
+ */
+router.get("/monthly", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory.filter(t => t.type === "SELL");
+
+    const monthlyStats = {};
+
+    trades.forEach(trade => {
+      const date = new Date(trade.date);
+      const key = `${date.getFullYear()}-${date.getMonth() + 1}`; // e.g. 2026-1
+      const pl = Number(trade.pl) || 0;
+
+      if (!monthlyStats[key]) {
+        monthlyStats[key] = { trades: 0, wins: 0, totalPL: 0 };
+      }
+
+      monthlyStats[key].trades++;
+      monthlyStats[key].totalPL += pl;
+      if (pl > 0) monthlyStats[key].wins++;
+    });
+
+    const result = Object.entries(monthlyStats).map(([month, data]) => ({
+      month,
+      trades: data.trades,
+      winRate: data.trades
+        ? ((data.wins / data.trades) * 100).toFixed(1)
+        : 0,
+      totalPL: data.totalPL.toFixed(2)
+    }));
+
+    // Sort newest month first
+    result.sort((a, b) => new Date(b.month) - new Date(a.month));
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Monthly analytics error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 module.exports = router;
