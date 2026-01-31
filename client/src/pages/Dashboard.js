@@ -27,6 +27,7 @@ import StrategyStats from "../components/StrategyStats";
 import StrategyPerformanceChart from "../components/StrategyPerformanceChart";
 import TraderScore from "../components/TraderScore";
 import StrategyLeaderboard from "../components/StrategyLeaderboard";
+import MonthlyReport from "../components/MonthlyReport";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -243,6 +244,10 @@ const Dashboard = () => {
 
       <div className="card">
         <StrategyLeaderboard />
+      </div>
+
+      <div className="card">
+        <MonthlyReport />
       </div>
 
       <div className="card">
