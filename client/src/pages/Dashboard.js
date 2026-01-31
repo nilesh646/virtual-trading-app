@@ -34,6 +34,7 @@ import StreakStats from "../components/StreakStats";
 import DrawdownCard from "../components/DrawdownCard";
 import SharpeCard from "../components/SharpeCard";
 import SortinoCard from "../components/SortinoCard";
+import ProfitFactorCard from "../components/ProfitFactorCard";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -272,6 +273,7 @@ const Dashboard = () => {
         <DrawdownCard />
         <SharpeCard />
         <SortinoCard />
+        <ProfitFactorCard />
       </div>
 
       <div className="card">
