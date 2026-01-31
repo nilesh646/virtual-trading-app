@@ -758,4 +758,48 @@ router.get("/expectancy", auth, async (req, res) => {
   }
 });
 
+// ===================== RISK REWARD RATIO =====================
+router.get("/risk-reward", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = (user.tradeHistory || []).filter(t => t.type === "SELL");
+
+    if (trades.length === 0) {
+      return res.json({ rrr: "0.00" });
+    }
+
+    let wins = [];
+    let losses = [];
+
+    trades.forEach(t => {
+      const pl = Number(t.pl || 0);
+      if (pl > 0) wins.push(pl);
+      if (pl < 0) losses.push(Math.abs(pl));
+    });
+
+    const avgWin = wins.length
+      ? wins.reduce((a, b) => a + b, 0) / wins.length
+      : 0;
+
+    const avgLoss = losses.length
+      ? losses.reduce((a, b) => a + b, 0) / losses.length
+      : 0;
+
+    if (avgLoss === 0) {
+      return res.json({ rrr: "∞" });
+    }
+
+    const rrr = avgWin / avgLoss;
+
+    res.json({ rrr: rrr.toFixed(2) });
+
+  } catch (err) {
+    console.error("RRR error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 module.exports = router;
