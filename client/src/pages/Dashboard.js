@@ -33,6 +33,7 @@ import DailyPLChart from "../components/DailyPLChart";
 import StreakStats from "../components/StreakStats";
 import DrawdownCard from "../components/DrawdownCard";
 import SharpeCard from "../components/SharpeCard";
+import SortinoCard from "../components/SortinoCard";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -270,6 +271,7 @@ const Dashboard = () => {
         <EquityCurveChart data={equityCurve} />
         <DrawdownCard />
         <SharpeCard />
+        <SortinoCard />
       </div>
 
       <div className="card">
