@@ -679,4 +679,41 @@ router.get("/sortino", auth, async (req, res) => {
   }
 });
 
+// ===================== PROFIT FACTOR =====================
+router.get("/profit-factor", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory || [];
+
+    const sellTrades = trades.filter(t => t.type === "SELL");
+
+    if (sellTrades.length === 0) {
+      return res.json({ profitFactor: "0.00" });
+    }
+
+    let totalProfit = 0;
+    let totalLoss = 0;
+
+    sellTrades.forEach(t => {
+      const pl = Number(t.pl || 0);
+      if (pl > 0) totalProfit += pl;
+      if (pl < 0) totalLoss += Math.abs(pl);
+    });
+
+    if (totalLoss === 0) {
+      return res.json({ profitFactor: "∞" });
+    }
+
+    const pf = totalProfit / totalLoss;
+
+    res.json({ profitFactor: pf.toFixed(2) });
+
+  } catch (err) {
+    console.error("Profit Factor error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;
