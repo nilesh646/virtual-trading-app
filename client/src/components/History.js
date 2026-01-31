@@ -4,37 +4,48 @@ import api from "../api/axios";
 const History = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState("all");
+
+  const loadHistory = async (tag = "all") => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/api/history?tag=${tag}`);
+      setHistory(res.data || []);
+    } catch (err) {
+      console.error("Failed to load history", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const res = await api.get("/api/history");
-        setHistory(res.data || []);
-      } catch (err) {
-        console.error("Failed to load history", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadHistory();
-  }, []);
+    loadHistory(selectedTag);
+  }, [selectedTag]);
 
   if (loading) return <p>Loading trade history...</p>;
-  if (!history.length) return <p>No trades yet</p>;
+  if (!history.length) return <p>No trades for this filter</p>;
 
-  // ✅ TOTAL REALIZED P/L (SAFE)
   const totalRealizedPL = history.reduce((sum, trade) => {
     const pl = Number(trade.pl || 0);
-    if (trade.type === "SELL") {
-      return sum + pl;
-    }
-    return sum;
+    return trade.type === "SELL" ? sum + pl : sum;
   }, 0);
 
   return (
     <div>
       <h3>Order History</h3>
+
+      {/* 🔥 STRATEGY FILTER */}
+      <select
+        value={selectedTag}
+        onChange={(e) => setSelectedTag(e.target.value)}
+        style={{ marginBottom: "10px" }}
+      >
+        <option value="all">All Trades</option>
+        <option value="breakout">Breakout</option>
+        <option value="news">News</option>
+        <option value="scalp">Scalp</option>
+        <option value="swing">Swing</option>
+      </select>
 
       {history.map((trade, index) => {
         const pl = Number(trade.pl || 0);
@@ -45,52 +56,24 @@ const History = () => {
             <br />
             Qty: {trade.quantity}
             <br />
-            Price: ₹{Number(trade.price).toFixed(2)}
+            Price: ₹{trade.price}
             <br />
 
-            {/* 💰 Show P/L only for SELL trades */}
+            {trade.tags?.length > 0 && (
+              <div style={{ fontSize: "0.8rem", color: "#555" }}>
+                Tags: {trade.tags.join(", ")}
+              </div>
+            )}
+
             {trade.type === "SELL" && (
               <span
                 style={{
-                  color: pl >= 0 ? "#00c853" : "#ff5252",
+                  color: pl >= 0 ? "green" : "red",
                   fontWeight: "bold"
                 }}
               >
                 Realized P/L: ₹{pl.toFixed(2)}
               </span>
-            )}
-
-            {/* 🤖 AutoTrader Trigger Reason */}
-            {trade.reason && (
-              <div
-                style={{
-                  color: "#ff9800",
-                  fontWeight: "bold",
-                  marginTop: "4px"
-                }}
-              >
-                Trigger: {trade.reason}
-              </div>
-            )}
-
-            {trade.notes && (
-              <p><strong>Notes:</strong> {trade.notes}</p>
-            )}
-
-            {trade.tags && trade.tags.length > 0 && (
-              <p>
-                <strong>Tags:</strong> {trade.tags.map((t, i) => (
-                  <span key={i} style={{
-                    background: "#333",
-                    color: "#fff",
-                    padding: "2px 6px",
-                    marginRight: "5px",
-                    borderRadius: "4px"
-                  }}>
-                    {t}
-                  </span>
-                ))}
-              </p>
             )}
 
             <br />
@@ -100,7 +83,7 @@ const History = () => {
         );
       })}
 
-      <h4 style={{ color: totalRealizedPL >= 0 ? "#00c853" : "#ff5252" }}>
+      <h4 style={{ color: totalRealizedPL >= 0 ? "green" : "red" }}>
         Total Realized P/L: ₹{totalRealizedPL.toFixed(2)}
       </h4>
     </div>
