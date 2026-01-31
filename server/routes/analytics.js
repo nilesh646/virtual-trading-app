@@ -716,4 +716,46 @@ router.get("/profit-factor", auth, async (req, res) => {
   }
 });
 
+// ===================== EXPECTANCY =====================
+router.get("/expectancy", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = (user.tradeHistory || []).filter(t => t.type === "SELL");
+
+    if (trades.length === 0) {
+      return res.json({ expectancy: "0.00" });
+    }
+
+    let wins = [];
+    let losses = [];
+
+    trades.forEach(t => {
+      const pl = Number(t.pl || 0);
+      if (pl > 0) wins.push(pl);
+      if (pl < 0) losses.push(Math.abs(pl));
+    });
+
+    const winRate = wins.length / trades.length;
+    const lossRate = losses.length / trades.length;
+
+    const avgWin = wins.length
+      ? wins.reduce((a, b) => a + b, 0) / wins.length
+      : 0;
+
+    const avgLoss = losses.length
+      ? losses.reduce((a, b) => a + b, 0) / losses.length
+      : 0;
+
+    const expectancy = winRate * avgWin - lossRate * avgLoss;
+
+    res.json({ expectancy: expectancy.toFixed(2) });
+
+  } catch (err) {
+    console.error("Expectancy error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;
