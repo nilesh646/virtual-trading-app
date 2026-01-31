@@ -310,6 +310,53 @@ router.get("/score", auth, async (req, res) => {
   }
 });
 
+/**
+ * ================================
+ * STRATEGY PERFORMANCE
+ * GET /api/analytics/strategies
+ * ================================
+ */
+router.get("/strategies", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory.filter(t => t.type === "SELL");
+
+    const stats = {};
+
+    trades.forEach(trade => {
+      const tags = trade.tags || ["untagged"];
+      const pl = Number(trade.pl) || 0;
+
+      tags.forEach(tag => {
+        if (!stats[tag]) {
+          stats[tag] = { trades: 0, wins: 0, totalPL: 0 };
+        }
+
+        stats[tag].trades++;
+        stats[tag].totalPL += pl;
+        if (pl > 0) stats[tag].wins++;
+      });
+    });
+
+    const result = Object.entries(stats).map(([tag, data]) => ({
+      tag,
+      trades: data.trades,
+      winRate: data.trades ? ((data.wins / data.trades) * 100).toFixed(1) : 0,
+      totalPL: data.totalPL.toFixed(2)
+    }));
+
+    // Sort best strategy first
+    result.sort((a, b) => b.totalPL - a.totalPL);
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Strategy analytics error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 module.exports = router;
