@@ -35,6 +35,7 @@ import DrawdownCard from "../components/DrawdownCard";
 import SharpeCard from "../components/SharpeCard";
 import SortinoCard from "../components/SortinoCard";
 import ProfitFactorCard from "../components/ProfitFactorCard";
+import ExpectancyCard from "../components/ExpectancyCard";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -274,6 +275,7 @@ const Dashboard = () => {
         <SharpeCard />
         <SortinoCard />
         <ProfitFactorCard />
+        <ExpectancyCard />
       </div>
 
       <div className="card">
