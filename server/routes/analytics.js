@@ -491,5 +491,72 @@ router.get("/daily-pl", auth, async (req, res) => {
   }
 });
 
+/**
+ * =====================================
+ * STREAK ANALYTICS
+ * GET /api/analytics/streaks
+ * =====================================
+ */
+router.get("/streaks", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const sells = (user.tradeHistory || [])
+      .filter(t => t.type === "SELL")
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    let winStreak = 0;
+    let lossStreak = 0;
+    let maxWinStreak = 0;
+    let maxLossStreak = 0;
+    let currentStreak = 0;
+    let currentType = null;
+
+    sells.forEach(trade => {
+      const pl = Number(trade.pl || 0);
+
+      if (pl > 0) {
+        winStreak++;
+        lossStreak = 0;
+        if (winStreak > maxWinStreak) maxWinStreak = winStreak;
+
+        if (currentType === "win") currentStreak++;
+        else {
+          currentStreak = 1;
+          currentType = "win";
+        }
+
+      } else if (pl < 0) {
+        lossStreak++;
+        winStreak = 0;
+        if (lossStreak > maxLossStreak) maxLossStreak = lossStreak;
+
+        if (currentType === "loss") currentStreak++;
+        else {
+          currentStreak = 1;
+          currentType = "loss";
+        }
+
+      } else {
+        winStreak = 0;
+        lossStreak = 0;
+        currentStreak = 0;
+        currentType = null;
+      }
+    });
+
+    res.json({
+      maxWinStreak,
+      maxLossStreak,
+      currentStreak,
+      currentType // "win" or "loss"
+    });
+
+  } catch (err) {
+    console.error("Streak analytics error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 module.exports = router;
