@@ -37,6 +37,7 @@ import SortinoCard from "../components/SortinoCard";
 import ProfitFactorCard from "../components/ProfitFactorCard";
 import ExpectancyCard from "../components/ExpectancyCard";
 import RiskRewardCard from "../components/RiskRewardCard";
+import TradeDurationCard from "../components/TradeDurationCard";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -278,6 +279,7 @@ const Dashboard = () => {
         <ProfitFactorCard />
         <ExpectancyCard />
         <RiskRewardCard />
+        <TradeDurationCard />
       </div>
 
       <div className="card">
