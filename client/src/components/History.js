@@ -23,7 +23,12 @@ const History = () => {
   }, [selectedTag]);
 
   const downloadCSV = () => {
-    window.open("/api/history/export", "_blank");
+    const token = localStorage.getItem("token");
+
+    window.open(
+      `https://virtual-trading-app-kcdu.onrender.com/api/history/export?token=${token}`,
+      "_blank"
+    );
   };
 
   if (loading) return <p>Loading trade history...</p>;
