@@ -497,6 +497,7 @@ router.get("/daily-pl", auth, async (req, res) => {
  * GET /api/analytics/streaks
  * =====================================
  */
+// ===================== STREAK ANALYTICS =====================
 router.get("/streaks", auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -519,7 +520,7 @@ router.get("/streaks", auth, async (req, res) => {
       if (pl > 0) {
         winStreak++;
         lossStreak = 0;
-        if (winStreak > maxWinStreak) maxWinStreak = winStreak;
+        maxWinStreak = Math.max(maxWinStreak, winStreak);
 
         if (currentType === "win") currentStreak++;
         else {
@@ -530,7 +531,7 @@ router.get("/streaks", auth, async (req, res) => {
       } else if (pl < 0) {
         lossStreak++;
         winStreak = 0;
-        if (lossStreak > maxLossStreak) maxLossStreak = lossStreak;
+        maxLossStreak = Math.max(maxLossStreak, lossStreak);
 
         if (currentType === "loss") currentStreak++;
         else {
@@ -550,7 +551,7 @@ router.get("/streaks", auth, async (req, res) => {
       maxWinStreak,
       maxLossStreak,
       currentStreak,
-      currentType // "win" or "loss"
+      currentType
     });
 
   } catch (err) {
@@ -558,5 +559,6 @@ router.get("/streaks", auth, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 module.exports = router;
