@@ -248,5 +248,68 @@ router.get("/strategy-performance", auth, async (req, res) => {
   }
 });
 
+/**
+ * ================================
+ * TRADER PERFORMANCE SCORE
+ * GET /api/analytics/score
+ * ================================
+ */
+router.get("/score", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory.filter(t => t.type === "SELL");
+
+    if (trades.length === 0) {
+      return res.json({ score: 0, grade: "No trades yet" });
+    }
+
+    let wins = 0;
+    let losses = 0;
+    let totalWin = 0;
+    let totalLoss = 0;
+    let disciplinedTrades = 0;
+
+    trades.forEach(t => {
+      const pl = Number(t.pl) || 0;
+
+      if (pl > 0) {
+        wins++;
+        totalWin += pl;
+      } else if (pl < 0) {
+        losses++;
+        totalLoss += Math.abs(pl);
+      }
+
+      if (t.stopLoss || t.takeProfit) disciplinedTrades++;
+    });
+
+    const winRate = (wins / trades.length) * 100;
+    const profitFactor = totalLoss === 0 ? totalWin : totalWin / totalLoss;
+    const disciplineRate = (disciplinedTrades / trades.length) * 100;
+
+    // 🎯 SCORE CALCULATION (0–100)
+    let score =
+      winRate * 0.4 +
+      Math.min(profitFactor * 10, 30) +
+      disciplineRate * 0.3;
+
+    score = Math.min(100, Math.round(score));
+
+    let grade = "High Risk Trader";
+    if (score >= 80) grade = "Elite Trader";
+    else if (score >= 60) grade = "Consistent Trader";
+    else if (score >= 40) grade = "Developing Trader";
+
+    res.json({ score, grade });
+
+  } catch (err) {
+    console.error("Trader score error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 module.exports = router;
