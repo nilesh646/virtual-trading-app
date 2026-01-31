@@ -407,6 +407,51 @@ router.get("/monthly", auth, async (req, res) => {
   }
 });
 
+/**
+ * =====================================
+ * BEST & WORST TRADE
+ * GET /api/analytics/trade-extremes
+ * =====================================
+ */
+router.get("/trade-extremes", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const sells = (user.tradeHistory || []).filter(t => t.type === "SELL");
+
+    if (!sells.length) {
+      return res.json({ best: null, worst: null });
+    }
+
+    let best = sells[0];
+    let worst = sells[0];
+
+    sells.forEach(trade => {
+      const pl = Number(trade.pl || 0);
+
+      if (pl > (best.pl || 0)) best = trade;
+      if (pl < (worst.pl || 0)) worst = trade;
+    });
+
+    res.json({
+      best: {
+        symbol: best.symbol,
+        pl: Number(best.pl).toFixed(2),
+        date: best.date
+      },
+      worst: {
+        symbol: worst.symbol,
+        pl: Number(worst.pl).toFixed(2),
+        date: worst.date
+      }
+    });
+
+  } catch (err) {
+    console.error("Trade extremes error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 module.exports = router;
