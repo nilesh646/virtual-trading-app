@@ -31,6 +31,7 @@ const History = () => {
     );
   };
 
+
   if (loading) return <p>Loading trade history...</p>;
   if (!history.length) return <p>No trades for this filter</p>;
 
@@ -44,20 +45,10 @@ const History = () => {
       <h3>Order History</h3>
 
       {/* 📥 CSV EXPORT BUTTON */}
-      <button
-        onClick={downloadCSV}
-        style={{
-          marginBottom: "10px",
-          padding: "6px 12px",
-          background: "#1976d2",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer"
-        }}
-      >
-        📥 Download Trade History
+      <button onClick={downloadCSV}>
+        Download Trade History (CSV)
       </button>
+
 
       {/* 🔥 STRATEGY FILTER */}
       <div style={{ marginBottom: "10px" }}>
