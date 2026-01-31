@@ -453,5 +453,43 @@ router.get("/trade-extremes", auth, async (req, res) => {
   }
 });
 
+/**
+ * =====================================
+ * DAILY P/L ANALYTICS
+ * GET /api/analytics/daily-pl
+ * =====================================
+ */
+router.get("/daily-pl", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const sells = (user.tradeHistory || []).filter(t => t.type === "SELL");
+
+    const dailyMap = {};
+
+    sells.forEach(trade => {
+      const dateKey = new Date(trade.date).toISOString().split("T")[0];
+      const pl = Number(trade.pl || 0);
+
+      if (!dailyMap[dateKey]) dailyMap[dateKey] = 0;
+      dailyMap[dateKey] += pl;
+    });
+
+    const result = Object.keys(dailyMap)
+      .sort()
+      .map(date => ({
+        date,
+        pl: Number(dailyMap[date].toFixed(2))
+      }));
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Daily PL error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 module.exports = router;
