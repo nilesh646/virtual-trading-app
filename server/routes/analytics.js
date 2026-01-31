@@ -592,5 +592,44 @@ router.get("/drawdown", auth, async (req, res) => {
   }
 });
 
+// ===================== SHARPE RATIO =====================
+router.get("/sharpe", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory || [];
+
+    // Only consider SELL trades (realized returns)
+    const returns = trades
+      .filter(t => t.type === "SELL")
+      .map(t => Number(t.pl || 0));
+
+    if (returns.length < 2) {
+      return res.json({ sharpe: "0.00" });
+    }
+
+    const avg =
+      returns.reduce((a, b) => a + b, 0) / returns.length;
+
+    const variance =
+      returns.reduce((a, b) => a + Math.pow(b - avg, 2), 0) /
+      returns.length;
+
+    const stdDev = Math.sqrt(variance);
+
+    if (stdDev === 0) {
+      return res.json({ sharpe: "0.00" });
+    }
+
+    const sharpe = avg / stdDev;
+
+    res.json({ sharpe: sharpe.toFixed(2) });
+
+  } catch (err) {
+    console.error("Sharpe error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 module.exports = router;
