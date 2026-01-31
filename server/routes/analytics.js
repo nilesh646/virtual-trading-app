@@ -560,5 +560,37 @@ router.get("/streaks", auth, async (req, res) => {
   }
 });
 
+// ===================== MAX DRAWDOWN =====================
+router.get("/drawdown", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory || [];
+
+    let equity = 100000; // starting capital
+    let peak = equity;
+    let maxDrawdown = 0;
+
+    trades.forEach(trade => {
+      const pl = Number(trade.pl || 0);
+      equity += pl;
+
+      if (equity > peak) peak = equity;
+
+      const drawdown = (peak - equity) / peak;
+      if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    });
+
+    res.json({
+      maxDrawdownPercent: (maxDrawdown * 100).toFixed(2)
+    });
+
+  } catch (err) {
+    console.error("Drawdown error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 module.exports = router;
