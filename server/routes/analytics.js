@@ -632,4 +632,51 @@ router.get("/sharpe", auth, async (req, res) => {
   }
 });
 
+// ===================== SORTINO RATIO =====================
+router.get("/sortino", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory || [];
+
+    // Use realized P/L from SELL trades
+    const returns = trades
+      .filter(t => t.type === "SELL")
+      .map(t => Number(t.pl || 0));
+
+    if (returns.length < 2) {
+      return res.json({ sortino: "0.00" });
+    }
+
+    const avg =
+      returns.reduce((a, b) => a + b, 0) / returns.length;
+
+    // Only negative returns for downside risk
+    const downside = returns.filter(r => r < 0);
+
+    if (downside.length === 0) {
+      return res.json({ sortino: "0.00" });
+    }
+
+    const variance =
+      downside.reduce((sum, r) => sum + Math.pow(r, 2), 0) /
+      downside.length;
+
+    const downsideDev = Math.sqrt(variance);
+
+    if (downsideDev === 0) {
+      return res.json({ sortino: "0.00" });
+    }
+
+    const sortino = avg / downsideDev;
+
+    res.json({ sortino: sortino.toFixed(2) });
+
+  } catch (err) {
+    console.error("Sortino error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;
