@@ -26,6 +26,7 @@ import StrategyEquityCurves from "../components/StrategyEquityCurves";
 import StrategyStats from "../components/StrategyStats";
 import StrategyPerformanceChart from "../components/StrategyPerformanceChart";
 import TraderScore from "../components/TraderScore";
+import StrategyLeaderboard from "../components/StrategyLeaderboard";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -238,6 +239,10 @@ const Dashboard = () => {
 
       <div className="card">
         <TraderScore />
+      </div>
+
+      <div className="card">
+        <StrategyLeaderboard />
       </div>
 
       <div className="card">
