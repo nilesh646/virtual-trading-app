@@ -26,4 +26,43 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// 📥 EXPORT TRADE HISTORY AS CSV
+router.get("/export", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory || [];
+
+    // CSV Header
+    let csv = "Date,Type,Symbol,Quantity,Price,P/L,Tags,Notes\n";
+
+    trades.forEach(trade => {
+      const row = [
+        new Date(trade.date).toLocaleString(),
+        trade.type,
+        trade.symbol,
+        trade.quantity,
+        trade.price,
+        trade.pl || 0,
+        trade.tags?.join("|") || "",
+        trade.notes || ""
+      ]
+        .map(val => `"${val}"`)
+        .join(",");
+
+      csv += row + "\n";
+    });
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("trade_history.csv");
+    res.send(csv);
+
+  } catch (err) {
+    console.error("CSV export error:", err);
+    res.status(500).json({ error: "Export failed" });
+  }
+});
+
+
 module.exports = router;

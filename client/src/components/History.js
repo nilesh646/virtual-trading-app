@@ -22,6 +22,10 @@ const History = () => {
     loadHistory(selectedTag);
   }, [selectedTag]);
 
+  const downloadCSV = () => {
+    window.open("/api/history/export", "_blank");
+  };
+
   if (loading) return <p>Loading trade history...</p>;
   if (!history.length) return <p>No trades for this filter</p>;
 
@@ -34,18 +38,35 @@ const History = () => {
     <div>
       <h3>Order History</h3>
 
-      {/* 🔥 STRATEGY FILTER */}
-      <select
-        value={selectedTag}
-        onChange={(e) => setSelectedTag(e.target.value)}
-        style={{ marginBottom: "10px" }}
+      {/* 📥 CSV EXPORT BUTTON */}
+      <button
+        onClick={downloadCSV}
+        style={{
+          marginBottom: "10px",
+          padding: "6px 12px",
+          background: "#1976d2",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer"
+        }}
       >
-        <option value="all">All Trades</option>
-        <option value="breakout">Breakout</option>
-        <option value="news">News</option>
-        <option value="scalp">Scalp</option>
-        <option value="swing">Swing</option>
-      </select>
+        📥 Download Trade History
+      </button>
+
+      {/* 🔥 STRATEGY FILTER */}
+      <div style={{ marginBottom: "10px" }}>
+        <select
+          value={selectedTag}
+          onChange={(e) => setSelectedTag(e.target.value)}
+        >
+          <option value="all">All Trades</option>
+          <option value="breakout">Breakout</option>
+          <option value="news">News</option>
+          <option value="scalp">Scalp</option>
+          <option value="swing">Swing</option>
+        </select>
+      </div>
 
       {history.map((trade, index) => {
         const pl = Number(trade.pl || 0);
@@ -62,6 +83,12 @@ const History = () => {
             {trade.tags?.length > 0 && (
               <div style={{ fontSize: "0.8rem", color: "#555" }}>
                 Tags: {trade.tags.join(", ")}
+              </div>
+            )}
+
+            {trade.notes && (
+              <div style={{ fontSize: "0.8rem", color: "#777" }}>
+                Notes: {trade.notes}
               </div>
             )}
 
