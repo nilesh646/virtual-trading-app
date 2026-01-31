@@ -25,7 +25,7 @@ import StrategyPerformance from "../components/StrategyPerformance";
 import StrategyEquityCurves from "../components/StrategyEquityCurves";
 import StrategyStats from "../components/StrategyStats";
 import StrategyPerformanceChart from "../components/StrategyPerformanceChart";
-
+import TraderScore from "../components/TraderScore";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -234,6 +234,10 @@ const Dashboard = () => {
 
       <div className="card">
         <RiskMeter holdings={wallet.holdings} />
+      </div>
+
+      <div className="card">
+        <TraderScore />
       </div>
 
       <div className="card">
