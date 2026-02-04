@@ -1,3 +1,13 @@
+import { Routes, Route, Link } from "react-router-dom";
+
+import DashboardHome from "./DashboardHome";
+import PortfolioPage from "./PortfolioPage";
+import AnalyticsPage from "./AnalyticsPage";
+import TradeHighlightsPage from "./TradeHighlightsPage";
+import HistoryPage from "./HistoryPage";
+import StrategyPage from "./StrategyPage";
+import AIPage from "./AIPage";
+
 import {
   useEffect,
   useState,
@@ -9,41 +19,41 @@ import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
-import Market from "../components/Market";
-import Trade from "../components/Trade";
-import Portfolio from "../components/Portfolio";
-import History from "../components/History";
-import PriceChart from "../components/PriceChart";
-import PortfolioChart from "../components/PortfolioChart";
-import Analytics from "../components/Analytics";
-import EquityCurveChart from "../components/EquityCurveChart";
-import AllocationChart from "../components/AllocationChart";
-import RiskMeter from "../components/RiskMeter";
-import MarketMovers from "../components/MarketMovers";
-import TradeLeaders from "../components/TradeLeaders";
-import StrategyPerformance from "../components/StrategyPerformance";
-import StrategyEquityCurves from "../components/StrategyEquityCurves";
-import StrategyStats from "../components/StrategyStats";
-import StrategyPerformanceChart from "../components/StrategyPerformanceChart";
-import TraderScore from "../components/TraderScore";
-import StrategyLeaderboard from "../components/StrategyLeaderboard";
-import MonthlyReport from "../components/MonthlyReport";
-import TradeExtremes from "../components/TradeExtremes";
-import DailyPLChart from "../components/DailyPLChart";
-import StreakStats from "../components/StreakStats";
-import DrawdownCard from "../components/DrawdownCard";
-import SharpeCard from "../components/SharpeCard";
-import SortinoCard from "../components/SortinoCard";
-import ProfitFactorCard from "../components/ProfitFactorCard";
-import ExpectancyCard from "../components/ExpectancyCard";
-import RiskRewardCard from "../components/RiskRewardCard";
-import TradeDurationCard from "../components/TradeDurationCard";
-import AIInsights from "../components/AIInsights";
-import AIMistakes from "../components/AIMistakes";
-import AITradeScores from "../components/AITradeScores";
-import AIWeeklyReport from "../components/AIWeeklyReport";
-import StrategyBreakdown from "../components/StrategyBreakdown";
-import TradeMistakes from "../components/TradeMistakes";
+// import Market from "../components/Market";
+// import Trade from "../components/Trade";
+// import Portfolio from "../components/Portfolio";
+// import History from "../components/History";
+// import PriceChart from "../components/PriceChart";
+// import PortfolioChart from "../components/PortfolioChart";
+// import Analytics from "../components/Analytics";
+// import EquityCurveChart from "../components/EquityCurveChart";
+// import AllocationChart from "../components/AllocationChart";
+// import RiskMeter from "../components/RiskMeter";
+// import MarketMovers from "../components/MarketMovers";
+// import TradeLeaders from "../components/TradeLeaders";
+// import StrategyPerformance from "../components/StrategyPerformance";
+// import StrategyEquityCurves from "../components/StrategyEquityCurves";
+// import StrategyStats from "../components/StrategyStats";
+// import StrategyPerformanceChart from "../components/StrategyPerformanceChart";
+// import TraderScore from "../components/TraderScore";
+// import StrategyLeaderboard from "../components/StrategyLeaderboard";
+// import MonthlyReport from "../components/MonthlyReport";
+// import TradeExtremes from "../components/TradeExtremes";
+// import DailyPLChart from "../components/DailyPLChart";
+// import StreakStats from "../components/StreakStats";
+// import DrawdownCard from "../components/DrawdownCard";
+// import SharpeCard from "../components/SharpeCard";
+// import SortinoCard from "../components/SortinoCard";
+// import ProfitFactorCard from "../components/ProfitFactorCard";
+// import ExpectancyCard from "../components/ExpectancyCard";
+// import RiskRewardCard from "../components/RiskRewardCard";
+// import TradeDurationCard from "../components/TradeDurationCard";
+// import AIInsights from "../components/AIInsights";
+// import AIMistakes from "../components/AIMistakes";
+// import AITradeScores from "../components/AITradeScores";
+// import AIWeeklyReport from "../components/AIWeeklyReport";
+// import StrategyBreakdown from "../components/StrategyBreakdown";
+// import TradeMistakes from "../components/TradeMistakes";
 
 
 const Dashboard = () => {
@@ -168,14 +178,14 @@ const Dashboard = () => {
 
 
   // ================= LIVE TOTAL P/L =================
-  const totalPL = useMemo(() => {
-    if (!wallet?.holdings?.length) return 0;
+  // const totalPL = useMemo(() => {
+  //   if (!wallet?.holdings?.length) return 0;
 
-    return wallet.holdings.reduce((sum, h) => {
-      const currentPrice = prices[h.symbol] ?? h.avgPrice;
-      return sum + (currentPrice - h.avgPrice) * h.quantity;
-    }, 0);
-  }, [wallet, prices]);
+  //   return wallet.holdings.reduce((sum, h) => {
+  //     const currentPrice = prices[h.symbol] ?? h.avgPrice;
+  //     return sum + (currentPrice - h.avgPrice) * h.quantity;
+  //   }, 0);
+  // }, [wallet, prices]);
 
   // const interval = setInterval(() => {
   //   loadPrices();
@@ -188,132 +198,63 @@ const Dashboard = () => {
   if (!token) return null;
   if (!wallet) return <p>Loading wallet...</p>;
 
-  return (
+  <div className="nav">
+    <Link to="/dashboard">Home</Link>
+    <Link to="/portfolio">Portfolio</Link>
+    <Link to="/analytics">Analytics</Link>
+    <Link to="/highlights">Highlights</Link>
+    <Link to="/strategy">Strategies</Link>
+    <Link to="/ai">AI</Link>
+    <Link to="/history">History</Link>
+  </div>
+
+
+ return (
     <div className="container">
       <h2>Trading Dashboard</h2>
       <button onClick={logout}>Logout</button>
 
-      <div className="card">
-        <h3>Account Balance</h3>
-        <p>₹{wallet.balance.toFixed(2)}</p>
+      {/* 🔹 NAVIGATION MENU */}
+      <div className="nav" style={{ marginBottom: "20px" }}>
+        <Link to="/dashboard">Home</Link> |{" "}
+        <Link to="/portfolio">Portfolio</Link> |{" "}
+        <Link to="/analytics">Analytics</Link> |{" "}
+        <Link to="/highlights">Highlights</Link> |{" "}
+        <Link to="/strategy">Strategies</Link> |{" "}
+        <Link to="/ai">AI</Link> |{" "}
+        <Link to="/history">History</Link>
       </div>
 
-      <div className="card">
-        <MarketMovers prices={marketData} />
-      </div>
-
-      <div className="card">
-        <h3>Live Portfolio P/L</h3>
-        <p
-          style={{
-            color: totalPL >= 0 ? "#00c853" : "#ff5252",
-            fontWeight: "bold"
-          }}
-        >
-          ₹{totalPL.toFixed(2)}
-        </p>
-      </div>
-
-      <div className="flex">
-        <div className="card" style={{ flex: 1 }}>
-          <Market
-            prices={marketData}
-            balance={wallet.balance}
-            holdings={wallet.holdings}
-            onBuy={buyStock}
-            onSell={sellStock}
-          />
-        </div>
-
-        <div className="card" style={{ flex: 1 }}>
-          <Trade refreshWallet={loadWallet} />
-        </div>
-      </div>
-
-      <div className="card">
-        <Portfolio
-          holdings={wallet.holdings}
-          prices={Object.fromEntries(
-            Object.entries(marketData).map(([k, v]) => [k, v.price])
-          )}
+      {/* 🔹 PAGE ROUTES */}
+      <Routes>
+        <Route
+          path="/dashboard"
+          element={
+            <DashboardHome
+              wallet={wallet}
+              marketData={marketData}
+              buyStock={buyStock}
+              sellStock={sellStock}
+              refreshWallet={loadWallet}
+            />
+          }
         />
-      </div>
 
-      <div className="card">
-        <PriceChart prices={prices} />
-      </div>
+        <Route
+          path="/portfolio"
+          element={<PortfolioPage wallet={wallet} prices={prices} />}
+        />
 
-      <div className="card">
-        <PortfolioChart holdings={wallet.holdings} />
-      </div>
+        <Route
+          path="/analytics"
+          element={<AnalyticsPage equityCurve={equityCurve} />}
+        />
 
-      <div className="card">
-        <AllocationChart holdings={wallet.holdings} />
-      </div>
-
-      <div className="card">
-        <RiskMeter holdings={wallet.holdings} />
-      </div>
-
-      <div className="card">
-        <TraderScore />
-      </div>
-
-      <div className="card">
-        <StrategyLeaderboard />
-      </div>
-
-      <div className="card">
-        <MonthlyReport />
-      </div>
-
-      <div className="card">
-        <TradeExtremes />
-      </div>
-
-      <div className="card">
-        <DailyPLChart />
-      </div>
-
-      <div className="card">
-        <Analytics />
-        <TradeLeaders />
-        <AIInsights />
-        <AIMistakes />
-        <AITradeScores />
-        <AIWeeklyReport />
-        <StrategyBreakdown />
-        <TradeMistakes />
-        <StrategyPerformanceChart />
-        <EquityCurveChart data={equityCurve} />
-        <DrawdownCard />
-        <SharpeCard />
-        <SortinoCard />
-        <ProfitFactorCard />
-        <ExpectancyCard />
-        <RiskRewardCard />
-        <TradeDurationCard />
-      </div>
-
-      <div className="card">
-        <StreakStats />
-      </div>
-
-      <div className="card">
-        <StrategyStats />
-      </div>
-
-      <div className="card">
-        <StrategyPerformance />
-      </div>
-
-      <div className="card">
-        <StrategyEquityCurves />
-      </div>
-
-      <div className="card">
-        <History />
-      </div>
+        <Route path="/highlights" element={<TradeHighlightsPage />} />
+        <Route path="/strategy" element={<StrategyPage />} />
+        <Route path="/ai" element={<AIPage />} />
+        <Route path="/history" element={<HistoryPage />} />
+      </Routes>
     </div>
   );
 };
