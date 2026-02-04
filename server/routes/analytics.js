@@ -1040,4 +1040,59 @@ router.get("/ai-trade-scores", auth, async (req, res) => {
   }
 });
 
+// ===================== AI WEEKLY REPORT =====================
+router.get("/weekly-report", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const trades = (user.tradeHistory || []).filter(
+      t => new Date(t.date) >= oneWeekAgo && t.type === "SELL"
+    );
+
+    const totalTrades = trades.length;
+    const wins = trades.filter(t => Number(t.pl) > 0).length;
+    const losses = trades.filter(t => Number(t.pl) < 0).length;
+    const totalPL = trades.reduce((sum, t) => sum + Number(t.pl || 0), 0);
+
+    const biggestWin = Math.max(0, ...trades.map(t => Number(t.pl || 0)));
+    const biggestLoss = Math.min(0, ...trades.map(t => Number(t.pl || 0)));
+
+    // 📉 Overtrading check
+    const tradesPerDay = {};
+    trades.forEach(t => {
+      const d = new Date(t.date).toDateString();
+      tradesPerDay[d] = (tradesPerDay[d] || 0) + 1;
+    });
+
+    const overtradeDays = Object.values(tradesPerDay).filter(c => c > 5).length;
+
+    // 🧠 AI Feedback
+    let feedback = "Steady trading week.";
+    if (wins > losses && totalPL > 0) feedback = "Strong performance — keep your discipline.";
+    if (losses > wins) feedback = "Focus on risk management and trade selection.";
+    if (overtradeDays > 0) feedback += " You overtraded on some days — reduce frequency.";
+
+    res.json({
+      totalTrades,
+      wins,
+      losses,
+      winRate: totalTrades ? ((wins / totalTrades) * 100).toFixed(1) : 0,
+      totalPL: totalPL.toFixed(2),
+      biggestWin,
+      biggestLoss,
+      overtradeDays,
+      feedback
+    });
+
+  } catch (err) {
+    console.error("Weekly report error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 module.exports = router;
