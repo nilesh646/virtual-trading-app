@@ -911,5 +911,84 @@ router.get("/ai-insights", auth, async (req, res) => {
   }
 });
 
+// ===================== AI MISTAKE DETECTOR =====================
+router.get("/ai-mistakes", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory
+      .filter(t => t.type === "SELL")
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (trades.length < 2) {
+      return res.json({ mistakes: ["Not enough data to detect mistakes yet."] });
+    }
+
+    const mistakes = [];
+
+    // ---------------- Revenge Trading ----------------
+    for (let i = 1; i < trades.length; i++) {
+      const prev = trades[i - 1];
+      const curr = trades[i];
+
+      const diffMinutes =
+        (new Date(curr.date) - new Date(prev.date)) / (1000 * 60);
+
+      if (prev.pl < 0 && diffMinutes < 10) {
+        mistakes.push("You placed a trade shortly after a loss — possible revenge trading.");
+        break;
+      }
+    }
+
+    // ---------------- Overtrading ----------------
+    const tradesByDay = {};
+    trades.forEach(t => {
+      const day = new Date(t.date).toDateString();
+      tradesByDay[day] = (tradesByDay[day] || 0) + 1;
+    });
+
+    if (Object.values(tradesByDay).some(count => count > 10)) {
+      mistakes.push("You are overtrading on some days. Quality > quantity.");
+    }
+
+    // ---------------- Risk/Reward Imbalance ----------------
+    let wins = 0, losses = 0, totalWin = 0, totalLoss = 0;
+
+    trades.forEach(t => {
+      if (t.pl > 0) {
+        wins++;
+        totalWin += t.pl;
+      } else if (t.pl < 0) {
+        losses++;
+        totalLoss += Math.abs(t.pl);
+      }
+    });
+
+    const avgWin = wins ? totalWin / wins : 0;
+    const avgLoss = losses ? totalLoss / losses : 0;
+
+    if (avgWin < avgLoss) {
+      mistakes.push("Your average loss is bigger than your average win.");
+    }
+
+    // ---------------- Big Single Loss ----------------
+    const bigLoss = trades.find(t => Math.abs(t.pl) > user.balance * 0.05);
+    if (bigLoss) {
+      mistakes.push("You had a very large loss compared to your account size.");
+    }
+
+    if (!mistakes.length) {
+      mistakes.push("No major trading mistakes detected recently. Keep it up!");
+    }
+
+    res.json({ mistakes });
+
+  } catch (err) {
+    console.error("AI mistake detection error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 module.exports = router;
