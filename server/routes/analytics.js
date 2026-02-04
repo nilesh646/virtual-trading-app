@@ -1139,4 +1139,69 @@ router.get("/strategy-performance", auth, async (req, res) => {
 });
 
 
+// ===================== TRADE MISTAKE DETECTOR =====================
+router.get("/mistakes", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = (user.tradeHistory || []).filter(t => t.type === "SELL");
+
+    if (trades.length === 0) {
+      return res.json({ message: "No trades yet" });
+    }
+
+    let totalWins = 0;
+    let totalLosses = 0;
+    let bigLosses = 0;
+    let smallWins = 0;
+
+    trades.forEach(t => {
+      const pl = Number(t.pl || 0);
+
+      if (pl > 0) {
+        totalWins++;
+        if (pl < 50) smallWins++; // small profit = exited too early
+      }
+
+      if (pl < 0) {
+        totalLosses++;
+        if (pl < -100) bigLosses++; // large loss = held too long
+      }
+    });
+
+    const tradesPerDay = {};
+    trades.forEach(t => {
+      const day = new Date(t.date).toDateString();
+      tradesPerDay[day] = (tradesPerDay[day] || 0) + 1;
+    });
+
+    const overtradeDays = Object.values(tradesPerDay).filter(v => v > 5).length;
+
+    const mistakes = [];
+
+    if (smallWins > totalWins * 0.5)
+      mistakes.push("You often exit winning trades too early.");
+
+    if (bigLosses > totalLosses * 0.4)
+      mistakes.push("You let losing trades run too long.");
+
+    if (overtradeDays > 3)
+      mistakes.push("You are overtrading on several days.");
+
+    if (totalWins < totalLosses)
+      mistakes.push("Your win rate is below 50%. Improve trade selection.");
+
+    if (mistakes.length === 0)
+      mistakes.push("Great discipline! No major trading mistakes detected.");
+
+    res.json({ mistakes });
+
+  } catch (err) {
+    console.error("Mistake detection error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 module.exports = router;
