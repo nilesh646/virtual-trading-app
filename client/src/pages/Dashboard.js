@@ -38,6 +38,7 @@ import ProfitFactorCard from "../components/ProfitFactorCard";
 import ExpectancyCard from "../components/ExpectancyCard";
 import RiskRewardCard from "../components/RiskRewardCard";
 import TradeDurationCard from "../components/TradeDurationCard";
+import AIInsights from "../components/AIInsights";
 
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
@@ -271,6 +272,7 @@ const Dashboard = () => {
       <div className="card">
         <Analytics />
         <TradeLeaders />
+        <AIInsights />
         <StrategyPerformanceChart />
         <EquityCurveChart data={equityCurve} />
         <DrawdownCard />
