@@ -1095,4 +1095,48 @@ router.get("/weekly-report", auth, async (req, res) => {
 });
 
 
+// ===================== STRATEGY PERFORMANCE =====================
+router.get("/strategy-performance", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = (user.tradeHistory || []).filter(t => t.type === "SELL");
+
+    const strategies = {};
+
+    trades.forEach(trade => {
+      const tags = trade.tags || ["untagged"];
+      const pl = Number(trade.pl || 0);
+
+      tags.forEach(tag => {
+        if (!strategies[tag]) {
+          strategies[tag] = { trades: 0, wins: 0, losses: 0, totalPL: 0 };
+        }
+
+        strategies[tag].trades += 1;
+        strategies[tag].totalPL += pl;
+
+        if (pl > 0) strategies[tag].wins += 1;
+        if (pl < 0) strategies[tag].losses += 1;
+      });
+    });
+
+    const result = Object.entries(strategies).map(([tag, data]) => ({
+      strategy: tag,
+      trades: data.trades,
+      winRate: data.trades ? ((data.wins / data.trades) * 100).toFixed(1) : 0,
+      totalPL: data.totalPL.toFixed(2),
+      avgPL: data.trades ? (data.totalPL / data.trades).toFixed(2) : 0
+    }));
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Strategy analytics error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 module.exports = router;
