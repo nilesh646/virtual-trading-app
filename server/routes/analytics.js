@@ -855,4 +855,61 @@ router.get("/trade-duration", auth, async (req, res) => {
   }
 });
 
+// ===================== AI TRADE INSIGHTS =====================
+router.get("/ai-insights", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory.filter(t => t.type === "SELL");
+
+    if (!trades.length) {
+      return res.json({ insights: ["Not enough trade data yet."] });
+    }
+
+    let wins = 0;
+    let losses = 0;
+    let totalWin = 0;
+    let totalLoss = 0;
+
+    trades.forEach(t => {
+      if (t.pl > 0) {
+        wins++;
+        totalWin += t.pl;
+      } else if (t.pl < 0) {
+        losses++;
+        totalLoss += Math.abs(t.pl);
+      }
+    });
+
+    const winRate = (wins / trades.length) * 100;
+    const avgWin = wins ? totalWin / wins : 0;
+    const avgLoss = losses ? totalLoss / losses : 0;
+
+    const insights = [];
+
+    if (winRate < 40)
+      insights.push("Your win rate is low. Consider improving trade selection.");
+
+    if (avgWin < avgLoss)
+      insights.push("Your losses are larger than your wins. Work on risk management.");
+
+    if (avgWin > avgLoss * 2)
+      insights.push("Great job letting winners run!");
+
+    if (trades.length > 20)
+      insights.push("You are trading frequently. Make sure quality > quantity.");
+
+    if (!insights.length)
+      insights.push("Your trading performance looks balanced. Keep refining!");
+
+    res.json({ insights });
+
+  } catch (err) {
+    console.error("AI insights error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 module.exports = router;
