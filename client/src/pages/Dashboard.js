@@ -42,6 +42,7 @@ import AIInsights from "../components/AIInsights";
 import AIMistakes from "../components/AIMistakes";
 import AITradeScores from "../components/AITradeScores";
 import AIWeeklyReport from "../components/AIWeeklyReport";
+import StrategyBreakdown from "../components/StrategyBreakdown";
 
 
 const Dashboard = () => {
@@ -280,6 +281,7 @@ const Dashboard = () => {
         <AIMistakes />
         <AITradeScores />
         <AIWeeklyReport />
+        <StrategyBreakdown />
         <StrategyPerformanceChart />
         <EquityCurveChart data={equityCurve} />
         <DrawdownCard />
