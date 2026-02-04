@@ -1204,4 +1204,95 @@ router.get("/mistakes", auth, async (req, res) => {
 });
 
 
+// ===================== TRADER SCORE =====================
+router.get("/trader-score", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = (user.tradeHistory || []).filter(t => t.type === "SELL");
+
+    if (trades.length === 0) {
+      return res.json({ score: 0, rating: "No data yet" });
+    }
+
+    let wins = 0;
+    let losses = 0;
+    let totalWinPL = 0;
+    let totalLossPL = 0;
+
+    trades.forEach(t => {
+      const pl = Number(t.pl || 0);
+      if (pl > 0) {
+        wins++;
+        totalWinPL += pl;
+      } else if (pl < 0) {
+        losses++;
+        totalLossPL += Math.abs(pl);
+      }
+    });
+
+    const totalTrades = wins + losses;
+    const winRate = wins / totalTrades;
+
+    // ===== SCORE 1: WIN RATE (30 pts) =====
+    const winRateScore = Math.min(winRate * 30, 30);
+
+    // ===== SCORE 2: RISK CONTROL (25 pts) =====
+    const avgWin = wins ? totalWinPL / wins : 0;
+    const avgLoss = losses ? totalLossPL / losses : 1;
+    const riskRatio = avgWin / avgLoss; // reward:risk
+    const riskScore = Math.min(riskRatio * 10, 25);
+
+    // ===== SCORE 3: CONSISTENCY (25 pts) =====
+    let equity = 100000;
+    let peak = equity;
+    let maxDrawdown = 0;
+
+    trades.forEach(t => {
+      equity += Number(t.pl || 0);
+      if (equity > peak) peak = equity;
+      const drawdown = (peak - equity) / peak;
+      if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    });
+
+    const consistencyScore = Math.max(25 - maxDrawdown * 100, 0);
+
+    // ===== SCORE 4: DISCIPLINE (20 pts) =====
+    const tradesPerDay = {};
+    trades.forEach(t => {
+      const day = new Date(t.date).toDateString();
+      tradesPerDay[day] = (tradesPerDay[day] || 0) + 1;
+    });
+
+    const overtradeDays = Object.values(tradesPerDay).filter(v => v > 5).length;
+    const disciplineScore = Math.max(20 - overtradeDays * 3, 0);
+
+    const finalScore = Math.round(
+      winRateScore + riskScore + consistencyScore + disciplineScore
+    );
+
+    let rating = "Beginner";
+    if (finalScore > 75) rating = "Pro Trader";
+    else if (finalScore > 55) rating = "Skilled Trader";
+    else if (finalScore > 35) rating = "Developing Trader";
+
+    res.json({
+      score: finalScore,
+      rating,
+      breakdown: {
+        winRateScore: winRateScore.toFixed(1),
+        riskScore: riskScore.toFixed(1),
+        consistencyScore: consistencyScore.toFixed(1),
+        disciplineScore: disciplineScore.toFixed(1)
+      }
+    });
+
+  } catch (err) {
+    console.error("Trader score error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 module.exports = router;
