@@ -40,6 +40,8 @@ import RiskRewardCard from "../components/RiskRewardCard";
 import TradeDurationCard from "../components/TradeDurationCard";
 import AIInsights from "../components/AIInsights";
 import AIMistakes from "../components/AIMistakes";
+import AITradeScores from "../components/AITradeScores";
+
 const Dashboard = () => {
   const { logout, token } = useContext(AuthContext);
 
@@ -274,6 +276,7 @@ const Dashboard = () => {
         <TradeLeaders />
         <AIInsights />
         <AIMistakes />
+        <AITradeScores />
         <StrategyPerformanceChart />
         <EquityCurveChart data={equityCurve} />
         <DrawdownCard />
