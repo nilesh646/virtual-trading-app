@@ -990,5 +990,54 @@ router.get("/ai-mistakes", auth, async (req, res) => {
   }
 });
 
+// ===================== AI TRADE SCORING =====================
+router.get("/ai-trade-scores", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trades = user.tradeHistory.filter(t => t.type === "SELL");
+
+    const scores = trades.map(trade => {
+      let score = 50; // base neutral score
+
+      const pl = Number(trade.pl || 0);
+      const risk = Math.abs((trade.stopLoss || 0) - trade.price);
+      const reward = Math.abs((trade.takeProfit || 0) - trade.price);
+
+      // 🟢 Reward > Risk
+      if (reward > risk) score += 15;
+
+      // 🟢 Winning trade
+      if (pl > 0) score += 15;
+
+      // 🔴 Losing trade
+      if (pl < 0) score -= 10;
+
+      // 🟢 Followed plan
+      if (trade.takeProfit && pl > 0) score += 10;
+      if (trade.stopLoss && pl < 0) score += 5;
+
+      // 🔴 Oversized loss
+      if (Math.abs(pl) > user.balance * 0.05) score -= 15;
+
+      // Clamp between 0–100
+      score = Math.max(0, Math.min(100, score));
+
+      return {
+        symbol: trade.symbol,
+        date: trade.date,
+        pl,
+        score
+      };
+    });
+
+    res.json(scores);
+
+  } catch (err) {
+    console.error("AI trade scoring error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 module.exports = router;
