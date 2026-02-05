@@ -29,11 +29,11 @@ const Dashboard = () => {
   const [marketData, setMarketData] = useState({});
 
   // 🔐 REDIRECT IF LOGGED OUT (MUST BE BEFORE ANY RETURNS)
-  useEffect(() => {
-    if (!token) {
-      navigate("/login");
-    }
-  }, [token, navigate]);
+  // useEffect(() => {
+  //   if (!token) {
+  //     navigate("/login");
+  //   }
+  // }, [token, navigate]);
 
   // ================= LOAD WALLET =================
   const loadWallet = useCallback(async () => {
@@ -137,7 +137,7 @@ const Dashboard = () => {
   }, [token, loadWallet, loadPrices, loadEquityCurve]);
 
   // ⏳ WAIT FOR WALLET
-  if (!wallet) return <p>Loading wallet...</p>;
+  if (!wallet && token) return <p>Loading wallet...</p>;
 
   return (
     <div className="dashboard-layout">

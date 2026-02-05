@@ -5,12 +5,11 @@ import { AuthContext } from "../context/AuthContext";
 const ProtectedRoute = ({ children }) => {
   const { token } = useContext(AuthContext);
 
-  // ⏳ wait until token is resolved
-  if (token === undefined) {
-    return <p>Loading...</p>;
+  if (!token) {
+    return <Navigate to="/login" replace/>;
   }
 
-  return token ? children : <Navigate to="/login" replace />;
+  return children;
 };
 
 export default ProtectedRoute;
