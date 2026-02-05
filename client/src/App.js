@@ -28,6 +28,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );
