@@ -7,6 +7,7 @@ import TradeHighlightsPage from "./TradeHighlightsPage";
 import HistoryPage from "./HistoryPage";
 import StrategyPage from "./StrategyPage";
 import AIPage from "./AIPage";
+import Sidebar from "../components/Sidebar";
 
 import {
   useEffect,
@@ -209,52 +210,43 @@ const Dashboard = () => {
   </div>
 
 
- return (
+  return (
     <div className="container">
-      <h2>Trading Dashboard</h2>
-      <button onClick={logout}>Logout</button>
+      <Sidebar />
 
-      {/* 🔹 NAVIGATION MENU */}
-      <div className="nav" style={{ marginBottom: "20px" }}>
-        <Link to="/dashboard">Home</Link> |{" "}
-        <Link to="/portfolio">Portfolio</Link> |{" "}
-        <Link to="/analytics">Analytics</Link> |{" "}
-        <Link to="/highlights">Highlights</Link> |{" "}
-        <Link to="/strategy">Strategies</Link> |{" "}
-        <Link to="/ai">AI</Link> |{" "}
-        <Link to="/history">History</Link>
+      <div className="main-content">
+        <button onClick={logout} style={{ float: "right" }}>Logout</button>
+
+        <Routes>
+          <Route
+            path="/dashboard"
+            element={
+              <DashboardHome
+                wallet={wallet}
+                marketData={marketData}
+                buyStock={buyStock}
+                sellStock={sellStock}
+                refreshWallet={loadWallet}
+              />
+            }
+          />
+
+          <Route
+            path="/portfolio"
+            element={<PortfolioPage wallet={wallet} prices={prices} />}
+          />
+
+          <Route
+            path="/analytics"
+            element={<AnalyticsPage equityCurve={equityCurve} />}
+          />
+
+          <Route path="/highlights" element={<TradeHighlightsPage />} />
+          <Route path="/strategy" element={<StrategyPage />} />
+          <Route path="/ai" element={<AIPage />} />
+          <Route path="/history" element={<HistoryPage />} />
+        </Routes>
       </div>
-
-      {/* 🔹 PAGE ROUTES */}
-      <Routes>
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardHome
-              wallet={wallet}
-              marketData={marketData}
-              buyStock={buyStock}
-              sellStock={sellStock}
-              refreshWallet={loadWallet}
-            />
-          }
-        />
-
-        <Route
-          path="/portfolio"
-          element={<PortfolioPage wallet={wallet} prices={prices} />}
-        />
-
-        <Route
-          path="/analytics"
-          element={<AnalyticsPage equityCurve={equityCurve} />}
-        />
-
-        <Route path="/highlights" element={<TradeHighlightsPage />} />
-        <Route path="/strategy" element={<StrategyPage />} />
-        <Route path="/ai" element={<AIPage />} />
-        <Route path="/history" element={<HistoryPage />} />
-      </Routes>
     </div>
   );
 };
