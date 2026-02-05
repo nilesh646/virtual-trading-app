@@ -5,12 +5,12 @@ const Sidebar = () => {
 
   const menu = [
     { path: "/dashboard", label: "Home" },
-    { path: "/portfolio", label: "Portfolio" },
-    { path: "/analytics", label: "Analytics" },
-    { path: "/highlights", label: "Highlights" },
-    { path: "/strategy", label: "Strategies" },
-    { path: "/ai", label: "AI Insights" },
-    { path: "/history", label: "History" },
+    { path: "/dashboard/portfolio", label: "Portfolio" },
+    { path: "/dashboard/analytics", label: "Analytics" },
+    { path: "/dashboard/highlights", label: "Highlights" },
+    { path: "/dashboard/strategy", label: "Strategies" },
+    { path: "/dashboard/ai", label: "AI Insights" },
+    { path: "/dashboard/history", label: "History" },
   ];
 
   return (
