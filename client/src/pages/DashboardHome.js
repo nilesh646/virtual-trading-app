@@ -3,6 +3,8 @@ import Trade from "../components/Trade";
 import MarketMovers from "../components/MarketMovers";
 
 const DashboardHome = ({ wallet, marketData, buyStock, sellStock, refreshWallet }) => {
+  if (!wallet) return null;
+
   return (
     <>
       <div className="card">
