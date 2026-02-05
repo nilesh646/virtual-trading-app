@@ -4,14 +4,15 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menu = [
-    { path: "/dashboard", label: "Home" },
-    { path: "/dashboard/portfolio", label: "Portfolio" },
-    { path: "/dashboard/analytics", label: "Analytics" },
-    { path: "/dashboard/highlights", label: "Highlights" },
-    { path: "/dashboard/strategy", label: "Strategies" },
-    { path: "/dashboard/ai", label: "AI Insights" },
-    { path: "/dashboard/history", label: "History" },
-  ];
+    { path: "", label: "Home" },          // default dashboard
+    { path: "portfolio", label: "Portfolio" },
+    { path: "analytics", label: "Analytics" },
+    { path: "highlights", label: "Highlights" },
+    { path: "strategy", label: "Strategies" },
+    { path: "ai", label: "AI Insights" },
+    { path: "history", label: "History" },
+    ];
+
 
   return (
     <div className="sidebar">
@@ -22,8 +23,8 @@ const Sidebar = () => {
           key={item.path}
           to={item.path}
           className={
-            location.pathname === item.path ? "nav-link active" : "nav-link"
-          }
+            location.pathname.endsWith(item.path) ? "nav-link active" : "nav-link"
+            }
         >
           {item.label}
         </Link>
