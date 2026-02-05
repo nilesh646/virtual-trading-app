@@ -168,20 +168,33 @@ const Dashboard = () => {
             }
           />
 
+
           <Route
             path="/portfolio"
-            element={<PortfolioPage wallet={wallet} prices={prices} />}
+            element={
+              <PortfolioPage
+                wallet={wallet}
+                prices={prices}
+                marketData={marketData}
+                refreshWallet={loadWallet}
+              />
+            }
           />
 
           <Route
             path="/analytics"
-            element={<AnalyticsPage equityCurve={equityCurve} />}
+            element={
+              <AnalyticsPage
+                equityCurve={equityCurve}
+                wallet={wallet}
+              />
+            }
           />
 
           <Route path="/highlights" element={<TradeHighlightsPage />} />
           <Route path="/strategy" element={<StrategyPage />} />
           <Route path="/ai" element={<AIPage />} />
-          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/history" element={<HistoryPage refreshWallet={loadWallet} />} />
         </Routes>
       </div>
     </div>
