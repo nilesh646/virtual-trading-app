@@ -1,14 +1,4 @@
-import { Routes, Route, Link } from "react-router-dom";
-
-import DashboardHome from "./DashboardHome";
-import PortfolioPage from "./PortfolioPage";
-import AnalyticsPage from "./AnalyticsPage";
-import TradeHighlightsPage from "./TradeHighlightsPage";
-import HistoryPage from "./HistoryPage";
-import StrategyPage from "./StrategyPage";
-import AIPage from "./AIPage";
-import Sidebar from "../components/Sidebar";
-
+import { Routes, Route, useNavigate } from "react-router-dom";
 import {
   useEffect,
   useState,
@@ -20,52 +10,30 @@ import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
-// import Market from "../components/Market";
-// import Trade from "../components/Trade";
-// import Portfolio from "../components/Portfolio";
-// import History from "../components/History";
-// import PriceChart from "../components/PriceChart";
-// import PortfolioChart from "../components/PortfolioChart";
-// import Analytics from "../components/Analytics";
-// import EquityCurveChart from "../components/EquityCurveChart";
-// import AllocationChart from "../components/AllocationChart";
-// import RiskMeter from "../components/RiskMeter";
-// import MarketMovers from "../components/MarketMovers";
-// import TradeLeaders from "../components/TradeLeaders";
-// import StrategyPerformance from "../components/StrategyPerformance";
-// import StrategyEquityCurves from "../components/StrategyEquityCurves";
-// import StrategyStats from "../components/StrategyStats";
-// import StrategyPerformanceChart from "../components/StrategyPerformanceChart";
-// import TraderScore from "../components/TraderScore";
-// import StrategyLeaderboard from "../components/StrategyLeaderboard";
-// import MonthlyReport from "../components/MonthlyReport";
-// import TradeExtremes from "../components/TradeExtremes";
-// import DailyPLChart from "../components/DailyPLChart";
-// import StreakStats from "../components/StreakStats";
-// import DrawdownCard from "../components/DrawdownCard";
-// import SharpeCard from "../components/SharpeCard";
-// import SortinoCard from "../components/SortinoCard";
-// import ProfitFactorCard from "../components/ProfitFactorCard";
-// import ExpectancyCard from "../components/ExpectancyCard";
-// import RiskRewardCard from "../components/RiskRewardCard";
-// import TradeDurationCard from "../components/TradeDurationCard";
-// import AIInsights from "../components/AIInsights";
-// import AIMistakes from "../components/AIMistakes";
-// import AITradeScores from "../components/AITradeScores";
-// import AIWeeklyReport from "../components/AIWeeklyReport";
-// import StrategyBreakdown from "../components/StrategyBreakdown";
-// import TradeMistakes from "../components/TradeMistakes";
+import Sidebar from "../components/Sidebar";
 
+import DashboardHome from "./DashboardHome";
+import PortfolioPage from "./PortfolioPage";
+import AnalyticsPage from "./AnalyticsPage";
+import TradeHighlightsPage from "./TradeHighlightsPage";
+import HistoryPage from "./HistoryPage";
+import StrategyPage from "./StrategyPage";
+import AIPage from "./AIPage";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { logout, token } = useContext(AuthContext);
 
   const [wallet, setWallet] = useState(null);
-  // const [prices, setPrices] = useState({});
   const [equityCurve, setEquityCurve] = useState([]);
-  // const [priceHistory, setPriceHistory] = useState({});
   const [marketData, setMarketData] = useState({});
 
+  // 🔐 REDIRECT IF LOGGED OUT (MUST BE BEFORE ANY RETURNS)
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
 
   // ================= LOAD WALLET =================
   const loadWallet = useCallback(async () => {
@@ -83,19 +51,16 @@ const Dashboard = () => {
       const res = await api.get("/api/market");
 
       const freshMarket = {};
-
       res.data.forEach(stock => {
         freshMarket[stock.symbol] = {
           ...stock,
-          price: Number(stock.price) // ensure number
+          price: Number(stock.price)
         };
       });
 
-      // ✅ Always replace state (not merge)
       setMarketData(freshMarket);
-
     } catch (err) {
-      console.error("Price fetch failed", err);
+      console.error("Price fetch failed");
     }
   }, []);
 
@@ -106,9 +71,6 @@ const Dashboard = () => {
     });
     return map;
   }, [marketData]);
-
-
-
 
   // ================= LOAD EQUITY CURVE =================
   const loadEquityCurve = useCallback(async () => {
@@ -142,9 +104,6 @@ const Dashboard = () => {
     [loadWallet, loadPrices, loadEquityCurve]
   );
 
-
-
-
   // ================= SELL =================
   const sellStock = useCallback(
     async (symbol) => {
@@ -177,45 +136,23 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, [token, loadWallet, loadPrices, loadEquityCurve]);
 
-
-  // ================= LIVE TOTAL P/L =================
-  // const totalPL = useMemo(() => {
-  //   if (!wallet?.holdings?.length) return 0;
-
-  //   return wallet.holdings.reduce((sum, h) => {
-  //     const currentPrice = prices[h.symbol] ?? h.avgPrice;
-  //     return sum + (currentPrice - h.avgPrice) * h.quantity;
-  //   }, 0);
-  // }, [wallet, prices]);
-
-  // const interval = setInterval(() => {
-  //   loadPrices();
-  //   loadWallet();
-  //   api.post("/api/trade/auto-sell-check"); // 🔥 AUTO SELL ENGINE
-  // }, 5000);
-
-
-  // ================= GUARDS =================
-  if (!token) return null;
+  // ⏳ WAIT FOR WALLET
   if (!wallet) return <p>Loading wallet...</p>;
 
-  <div className="nav">
-    <Link to="/dashboard">Home</Link>
-    <Link to="/portfolio">Portfolio</Link>
-    <Link to="/analytics">Analytics</Link>
-    <Link to="/highlights">Highlights</Link>
-    <Link to="/strategy">Strategies</Link>
-    <Link to="/ai">AI</Link>
-    <Link to="/history">History</Link>
-  </div>
-
-
   return (
-    <div className="container">
+    <div className="dashboard-layout">
       <Sidebar />
 
       <div className="main-content">
-        <button onClick={logout} style={{ float: "right" }}>Logout</button>
+        <button
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
+          className="logout-btn"
+        >
+          Logout
+        </button>
 
         <Routes>
           <Route
