@@ -55,7 +55,7 @@ body {
   min-height: 100vh;
 }
 
-/* SIDEBAR */
+/* SIDEBAR
 .sidebar {
   width: 220px;
   background: #111827;
@@ -86,7 +86,7 @@ body {
 .nav-link.active {
   background: #2563eb;
   color: white;
-}
+} */
 
 /* MAIN CONTENT
 .main-content {
