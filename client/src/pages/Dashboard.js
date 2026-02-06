@@ -157,7 +157,7 @@ const Dashboard = () => {
 
         <Routes>
           <Route
-            path="/dashboard"
+            index
             element={
               <DashboardHome
                 wallet={wallet}
@@ -170,7 +170,7 @@ const Dashboard = () => {
           />
 
           <Route
-            path="/dashboard/portfolio"
+            path="portfolio"
             element={
               <PortfolioPage
                 wallet={wallet}
@@ -180,17 +180,17 @@ const Dashboard = () => {
           />
 
           <Route
-            path="/dashboard/analytics"
+            path="analytics"
             element={<AnalyticsPage equityCurve={equityCurve} />}
           />
 
-          <Route path="/dashboard/highlights" element={<TradeHighlightsPage />} />
-          <Route path="/dashboard/strategy" element={<StrategyPage />} />
-          <Route path="/dashboard/ai" element={<AIPage />} />
-          <Route path="/dashboard/history" element={<HistoryPage />} />
+          <Route path="highlights" element={<TradeHighlightsPage />} />
+          <Route path="strategy" element={<StrategyPage />} />
+          <Route path="ai" element={<AIPage />} />
+          <Route path="history" element={<HistoryPage />} />
         </Routes>
 
-
+        
 
       </div>
     </div>

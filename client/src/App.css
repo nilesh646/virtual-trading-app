@@ -77,3 +77,18 @@
   flex: 1;
   padding: 25px;
 }
+
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: #0b1629;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
