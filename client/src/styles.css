@@ -1,4 +1,4 @@
-body {
+/* body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #f5f7fb;
@@ -55,7 +55,7 @@ body {
   min-height: 100vh;
 }
 
-/* SIDEBAR */
+
 .sidebar {
   width: 220px;
   background: #111827;
@@ -88,9 +88,103 @@ body {
   color: white;
 }
 
-/* MAIN CONTENT */
+
 .main-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+} */
+
+/* ===== GLOBAL ===== */
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+/* ===== DASHBOARD LAYOUT ===== */
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 240px;
+  background: #111827;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  font-size: 1.4rem;
+  margin-bottom: 30px;
+  color: white;
+}
+
+.nav-link {
+  color: #9ca3af;
+  text-decoration: none;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.nav-link:hover {
+  background: #1f2937;
+  color: white;
+}
+
+.nav-link.active {
+  background: #2563eb;
+  color: white;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: white;
+  color: #111827;     /* FIXES invisible text */
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* ===== GRID (SIDE BY SIDE) ===== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ===== BUTTON ===== */
+button {
+  padding: 8px 14px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+/* ===== INPUT ===== */
+input, textarea, select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
 }

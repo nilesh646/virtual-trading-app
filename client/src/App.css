@@ -1,4 +1,4 @@
-/* .App {
+.App {
   text-align: center;
 }
 
@@ -36,54 +36,51 @@
   to {
     transform: rotate(360deg);
   }
-} */
+}
 
 /* ================= GLOBAL ================= */
 
+/* ===== GLOBAL ===== */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0b1629;
-  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #0f172a;
+  color: white;
 }
 
-/* ================= LAYOUT ================= */
-
+/* ===== DASHBOARD LAYOUT ===== */
 .container {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #0f172a, #0b1220);
 }
 
 /* ===== SIDEBAR ===== */
-
 .sidebar {
   width: 240px;
-  background: #0b1220;
+  background: #111827;
   padding: 20px;
   display: flex;
   flex-direction: column;
 }
 
 .logo {
+  font-size: 1.4rem;
   margin-bottom: 30px;
-  font-size: 20px;
-  font-weight: bold;
+  color: white;
 }
 
-/* ===== NAV LINKS ===== */
-
 .nav-link {
-  padding: 10px;
-  color: #cbd5e1;
+  color: #9ca3af;
   text-decoration: none;
+  margin-bottom: 10px;
+  padding: 10px;
   border-radius: 6px;
-  margin-bottom: 8px;
   transition: 0.2s;
 }
 
 .nav-link:hover {
-  background: #1e293b;
+  background: #1f2937;
+  color: white;
 }
 
 .nav-link.active {
@@ -92,59 +89,35 @@ body {
 }
 
 /* ===== MAIN CONTENT ===== */
-
 .main-content {
   flex: 1;
   padding: 25px;
+  overflow-y: auto;
 }
 
-/* ================= CARD ================= */
-
+/* ===== CARDS ===== */
 .card {
-  background: #ffffff;
-  color: #111827;
-  border-radius: 10px;
+  background: white;
+  color: #111827;     /* FIXES invisible text */
   padding: 16px;
   margin-bottom: 20px;
-  box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-/* ================= GRID (SIDE BY SIDE) ================= */
-
+/* ===== GRID (SIDE BY SIDE) ===== */
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-/* ================= INPUTS ================= */
-
-input,
-textarea,
-select {
-  width: 100%;
-  padding: 8px;
-  margin-top: 6px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #111827;
-}
-
-/* ================= BUTTON ================= */
-
+/* ===== BUTTON ===== */
 button {
+  padding: 8px 14px;
+  border: none;
   background: #2563eb;
   color: white;
-  border: none;
-  padding: 8px 14px;
   border-radius: 6px;
   cursor: pointer;
 }
@@ -153,10 +126,10 @@ button:hover {
   background: #1d4ed8;
 }
 
-/* ================= TABLE FIX ================= */
-
-table,
-td,
-th {
-  color: #111827;
+/* ===== INPUT ===== */
+input, textarea, select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
 }
