@@ -2,22 +2,31 @@ import Market from "../components/Market";
 import Trade from "../components/Trade";
 import MarketMovers from "../components/MarketMovers";
 
-const DashboardHome = ({ wallet, marketData, buyStock, sellStock, refreshWallet }) => {
+const DashboardHome = ({
+  wallet,
+  marketData,
+  buyStock,
+  sellStock,
+  refreshWallet
+}) => {
   if (!wallet) return null;
 
   return (
     <>
+      {/* ===== BALANCE CARD ===== */}
       <div className="card">
         <h3>Account Balance</h3>
-        <p>₹{wallet.balance.toFixed(2)}</p>
+        <h2>₹{wallet.balance.toFixed(2)}</h2>
       </div>
 
+      {/* ===== MARKET MOVERS ===== */}
       <div className="card">
         <MarketMovers prices={marketData} />
       </div>
 
-      <div className="flex">
-        <div className="card" style={{ flex: 1 }}>
+      {/* ===== MARKET + TRADE SIDE BY SIDE ===== */}
+      <div className="grid-2">
+        <div className="card">
           <Market
             prices={marketData}
             balance={wallet.balance}
@@ -27,7 +36,7 @@ const DashboardHome = ({ wallet, marketData, buyStock, sellStock, refreshWallet 
           />
         </div>
 
-        <div className="card" style={{ flex: 1 }}>
+        <div className="card">
           <Trade refreshWallet={refreshWallet} />
         </div>
       </div>

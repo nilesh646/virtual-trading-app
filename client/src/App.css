@@ -13,6 +13,7 @@
   }
 }
 
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -37,15 +38,27 @@
   }
 }
 
+/* ================= GLOBAL ================= */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b1629;
+  color: #ffffff;
+}
+
+/* ================= LAYOUT ================= */
+
 .container {
   display: flex;
   min-height: 100vh;
   background: linear-gradient(to bottom right, #0f172a, #0b1220);
-  color: white;
 }
 
+/* ===== SIDEBAR ===== */
+
 .sidebar {
-  width: 220px;
+  width: 240px;
   background: #0b1220;
   padding: 20px;
   display: flex;
@@ -54,7 +67,11 @@
 
 .logo {
   margin-bottom: 30px;
+  font-size: 20px;
+  font-weight: bold;
 }
+
+/* ===== NAV LINKS ===== */
 
 .nav-link {
   padding: 10px;
@@ -62,6 +79,7 @@
   text-decoration: none;
   border-radius: 6px;
   margin-bottom: 8px;
+  transition: 0.2s;
 }
 
 .nav-link:hover {
@@ -73,22 +91,72 @@
   color: white;
 }
 
+/* ===== MAIN CONTENT ===== */
+
 .main-content {
   flex: 1;
   padding: 25px;
 }
 
-.container {
-  display: flex;
-  min-height: 100vh;
+/* ================= CARD ================= */
+
+.card {
+  background: #ffffff;
+  color: #111827;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
 }
 
-.sidebar {
-  width: 240px;
-  background: #0b1629;
+/* ================= GRID (SIDE BY SIDE) ================= */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
-.main-content {
-  flex: 1;
-  padding: 20px;
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ================= INPUTS ================= */
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #111827;
+}
+
+/* ================= BUTTON ================= */
+
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+/* ================= TABLE FIX ================= */
+
+table,
+td,
+th {
+  color: #111827;
 }
