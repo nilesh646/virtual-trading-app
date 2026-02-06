@@ -153,10 +153,11 @@ const Dashboard = () => {
         >
           Logout
         </button>
+        
 
         <Routes>
           <Route
-            index
+            path="/dashboard"
             element={
               <DashboardHome
                 wallet={wallet}
@@ -169,7 +170,7 @@ const Dashboard = () => {
           />
 
           <Route
-            path="portfolio"
+            path="/dashboard/portfolio"
             element={
               <PortfolioPage
                 wallet={wallet}
@@ -179,15 +180,16 @@ const Dashboard = () => {
           />
 
           <Route
-            path="analytics"
+            path="/dashboard/analytics"
             element={<AnalyticsPage equityCurve={equityCurve} />}
           />
 
-          <Route path="highlights" element={<TradeHighlightsPage />} />
-          <Route path="strategy" element={<StrategyPage />} />
-          <Route path="ai" element={<AIPage />} />
-          <Route path="history" element={<HistoryPage />} />
+          <Route path="/dashboard/highlights" element={<TradeHighlightsPage />} />
+          <Route path="/dashboard/strategy" element={<StrategyPage />} />
+          <Route path="/dashboard/ai" element={<AIPage />} />
+          <Route path="/dashboard/history" element={<HistoryPage />} />
         </Routes>
+
 
 
       </div>

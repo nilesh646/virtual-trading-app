@@ -4,14 +4,14 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menu = [
-    { path: "", label: "Home" },          // default dashboard
-    { path: "portfolio", label: "Portfolio" },
-    { path: "analytics", label: "Analytics" },
-    { path: "highlights", label: "Highlights" },
-    { path: "strategy", label: "Strategies" },
-    { path: "ai", label: "AI Insights" },
-    { path: "history", label: "History" },
-    ];
+    { path: "/dashboard", label: "Home" },
+    { path: "/dashboard/portfolio", label: "Portfolio" },
+    { path: "/dashboard/analytics", label: "Analytics" },
+    { path: "/dashboard/highlights", label: "Highlights" },
+    { path: "/dashboard/strategy", label: "Strategies" },
+    { path: "/dashboard/ai", label: "AI Insights" },
+    { path: "/dashboard/history", label: "History" },
+  ];
 
 
   return (
