@@ -133,3 +133,26 @@ input, textarea, select {
   border: 1px solid #ccc;
   margin-bottom: 8px;
 }
+
+
+/* ===== TRADING LAYOUT ===== */
+
+.trading-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.trade-panel {
+  max-width: 350px;
+}
+
+
+.market-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+

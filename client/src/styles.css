@@ -188,3 +188,124 @@ input, textarea, select {
   border: 1px solid #ccc;
   margin-bottom: 8px;
 }
+
+
+/* ===== TRADING LAYOUT ===== */
+
+.trading-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.trade-panel {
+  max-width: 350px;
+}
+
+
+.market-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+/* ===== TRADING LAYOUT ===== */
+
+.trading-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.trade-panel {
+  max-width: 350px;
+}
+
+
+.market-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.market-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.market-table th {
+  text-align: left;
+  padding: 10px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #1f2937;
+}
+
+.market-table td {
+  padding: 10px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.market-row:hover {
+  background: #111827;
+}
+
+.price-up {
+  color: #00c853;
+  font-weight: bold;
+}
+
+.price-down {
+  color: #ff5252;
+  font-weight: bold;
+}
+
+.price-up {
+  color: #00c853;
+  font-weight: bold;
+}
+
+.price-down {
+  color: #ff5252;
+  font-weight: bold;
+}
+
+.flash-green {
+  animation: flashGreen 0.6s ease;
+}
+
+.flash-red {
+  animation: flashRed 0.6s ease;
+}
+
+@keyframes flashGreen {
+  0% { background: rgba(0,200,83,0.4); }
+  100% { background: transparent; }
+}
+
+@keyframes flashRed {
+  0% { background: rgba(255,82,82,0.4); }
+  100% { background: transparent; }
+}
+
+
+.price-up {
+  animation: flashGreen 0.6s ease;
+}
+
+.price-down {
+  animation: flashRed 0.6s ease;
+}
+
+@keyframes flashGreen {
+  0%   { background-color: rgba(0, 200, 83, 0.6); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flashRed {
+  0%   { background-color: rgba(255, 82, 82, 0.6); }
+  100% { background-color: transparent; }
+}

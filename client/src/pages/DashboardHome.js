@@ -13,32 +13,39 @@ const DashboardHome = ({
 
   return (
     <>
-      {/* ===== BALANCE CARD ===== */}
       <div className="card">
         <h3>Account Balance</h3>
-        <h2>₹{wallet.balance.toFixed(2)}</h2>
+        <p>₹{wallet.balance.toFixed(2)}</p>
       </div>
 
-      {/* ===== MARKET MOVERS ===== */}
       <div className="card">
         <MarketMovers prices={marketData} />
       </div>
 
-      {/* ===== MARKET + TRADE SIDE BY SIDE ===== */}
-      <div className="grid-2">
-        <div className="card">
-          <Market
-            prices={marketData}
-            balance={wallet.balance}
-            holdings={wallet.holdings}
-            onBuy={buyStock}
-            onSell={sellStock}
-          />
+      <div className="trading-layout">
+
+        {/* LEFT SIDE — MARKET AREA */}
+        <div className="market-panel">
+
+          <div className="card">
+            <Market
+              prices={marketData}
+              balance={wallet.balance}
+              holdings={wallet.holdings}
+              onBuy={buyStock}
+              onSell={sellStock}
+            />
+          </div>
+
         </div>
 
-        <div className="card">
-          <Trade refreshWallet={refreshWallet} />
+        {/* RIGHT SIDE — TRADE PANEL */}
+        <div className="trade-panel">
+          <div className="card">
+            <Trade refreshWallet={refreshWallet} />
+          </div>
         </div>
+
       </div>
     </>
   );
