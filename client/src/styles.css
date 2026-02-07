@@ -325,3 +325,24 @@ input, textarea, select {
   margin-bottom: 8px;
 }
 
+.heatmap-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.heatmap-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.05);
+}

@@ -1,6 +1,7 @@
 import Market from "../components/Market";
 import Trade from "../components/Trade";
 import MarketMovers from "../components/MarketMovers";
+import MarketHeatmap from "../components/MarketHeatmap";
 
 const DashboardHome = ({
   wallet,
@@ -23,6 +24,13 @@ const DashboardHome = ({
 
       <div className="card">
         <MarketMovers prices={marketData} />
+      </div>
+
+      <div className="card">
+        <MarketHeatmap
+          prices={marketData}
+          onBuy={buyStock}
+        />
       </div>
 
       <div className="trading-layout">
