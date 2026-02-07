@@ -77,14 +77,15 @@ const Dashboard = () => {
 
           historyUpdate[stock.symbol].push(price);
 
-          // keep last 20 points
-          if (historyUpdate[stock.symbol].length > 20) {
+          // keep only last 30 points
+          if (historyUpdate[stock.symbol].length > 30) {
             historyUpdate[stock.symbol].shift();
           }
         });
 
         return historyUpdate;
       });
+
 
       setMarketData(freshMarket);
 

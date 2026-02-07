@@ -310,10 +310,18 @@ input, textarea, select {
   100% { background-color: transparent; }
 }
 
+/* PRICE FLASH EFFECT */
 .price-up {
-  background: rgba(0, 200, 83, 0.15);
+  background: rgba(0, 200, 83, 0.25);
+  transition: background 0.4s ease;
 }
 
 .price-down {
-  background: rgba(255, 82, 82, 0.15);
+  background: rgba(255, 82, 82, 0.25);
+  transition: background 0.4s ease;
 }
+
+.card h4 {
+  margin-bottom: 8px;
+}
+

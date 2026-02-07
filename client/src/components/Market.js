@@ -39,7 +39,7 @@ const Market = ({
         changes[symbol] = percent;
 
         if (newPrice > oldPrice) flashes[symbol] = "up";
-        if (newPrice < oldPrice) flashes[symbol] = "down";
+        else if (newPrice < oldPrice) flashes[symbol] = "down";
       } else {
         changes[symbol] = 0;
       }
@@ -48,14 +48,21 @@ const Market = ({
     setFlashMap(flashes);
     setChangeMap(changes);
 
-    const timer = setTimeout(() => setFlashMap({}), 600);
+    // remove flash after animation
+    const timer = setTimeout(() => {
+      setFlashMap({});
+    }, 500);
 
     prevPricesRef.current = Object.fromEntries(
-      Object.entries(prices).map(([s, v]) => [s, Number(v.price)])
+      Object.entries(prices).map(([s, v]) => [
+        s,
+        Number(v.price)
+      ])
     );
 
     return () => clearTimeout(timer);
   }, [prices]);
+
 
   // ================= WATCHLIST TOGGLE =================
   const toggleWatchlist = async (symbol) => {
@@ -122,7 +129,7 @@ const Market = ({
 
         <strong>{symbol}</strong>
 
-        <span
+       <span
           className={
             flashMap[symbol] === "up"
               ? "price-up"
@@ -130,7 +137,11 @@ const Market = ({
               ? "price-down"
               : ""
           }
-          style={{ padding: "2px 6px", borderRadius: "4px", marginLeft: "6px" }}
+          style={{
+            padding: "2px 6px",
+            borderRadius: "4px",
+            transition: "all 0.3s ease"
+          }}
         >
           ₹{price.toFixed(2)}
         </span>

@@ -18,6 +18,14 @@ const lastPrices = {};
 
 const getStockPrice = async (symbol) => {
   const now = Date.now();
+  const changePercent =
+    ((livePrice - basePrice) / basePrice) * 100;
+
+  const stock = {
+    symbol,
+    price: livePrice,
+    changePercent
+  };
 
   // Return cached price if still valid
   if (cache[symbol] && now - cache[symbol].time < CACHE_DURATION) {
