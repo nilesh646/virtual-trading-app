@@ -28,6 +28,8 @@ const Dashboard = () => {
   const [equityCurve, setEquityCurve] = useState([]);
   const [marketData, setMarketData] = useState({});
   const [watchlist, setWatchlist] = useState([]);
+  const [priceHistory, setPriceHistory] = useState({});
+
 
   // 🔐 REDIRECT IF LOGGED OUT (MUST BE BEFORE ANY RETURNS)
   // useEffect(() => {
@@ -52,18 +54,45 @@ const Dashboard = () => {
       const res = await api.get("/api/market");
 
       const freshMarket = {};
+
       res.data.forEach(stock => {
+        const price = Number(stock.price);
+
         freshMarket[stock.symbol] = {
           ...stock,
-          price: Number(stock.price)
+          price
         };
       });
 
+      // ✅ SAFE history update (NO dependency warning)
+      setPriceHistory(prevHistory => {
+        const historyUpdate = { ...prevHistory };
+
+        res.data.forEach(stock => {
+          const price = Number(stock.price);
+
+          if (!historyUpdate[stock.symbol]) {
+            historyUpdate[stock.symbol] = [];
+          }
+
+          historyUpdate[stock.symbol].push(price);
+
+          // keep last 20 points
+          if (historyUpdate[stock.symbol].length > 20) {
+            historyUpdate[stock.symbol].shift();
+          }
+        });
+
+        return historyUpdate;
+      });
+
       setMarketData(freshMarket);
+
     } catch (err) {
       console.error("Price fetch failed");
     }
   }, []);
+
 
   const prices = useMemo(() => {
     const map = {};
@@ -179,6 +208,7 @@ const Dashboard = () => {
                 refreshWallet={loadWallet}
                 watchlist={watchlist}
                 setWatchlist={setWatchlist}
+                priceHistory={priceHistory}
               />
             }
           />

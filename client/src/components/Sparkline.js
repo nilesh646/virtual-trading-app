@@ -1,31 +1,32 @@
-import { Line } from "react-chartjs-2";
-
-const Sparkline = ({ data = [] }) => {
+const Sparkline = ({ data = [], width = 80, height = 30 }) => {
   if (!data.length) return null;
 
-  const chartData = {
-    labels: data.map((_, i) => i),
-    datasets: [
-      {
-        data,
-        borderColor: data[data.length - 1] >= data[0] ? "#00c853" : "#ff5252",
-        borderWidth: 2,
-        tension: 0.4,
-        pointRadius: 0
-      }
-    ]
-  };
+  const max = Math.max(...data);
+  const min = Math.min(...data);
 
-  const options = {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { display: false },
-      y: { display: false }
-    }
-  };
+  const points = data
+    .map((price, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y =
+        height -
+        ((price - min) / (max - min || 1)) * height;
 
-  return <Line data={chartData} options={options} height={50} />;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  const isUp = data[data.length - 1] >= data[0];
+
+  return (
+    <svg width={width} height={height}>
+      <polyline
+        fill="none"
+        stroke={isUp ? "#00c853" : "#ff5252"}
+        strokeWidth="2"
+        points={points}
+      />
+    </svg>
+  );
 };
 
 export default Sparkline;
