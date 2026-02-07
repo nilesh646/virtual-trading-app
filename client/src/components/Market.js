@@ -1,23 +1,27 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import api from "../api/axios";
 
 const Market = ({
   prices = {},
   onBuy,
   onSell,
   balance = 0,
-  holdings = []
+  holdings = [],
+  watchlist = [],
+  setWatchlist
 }) => {
 
   const prevPricesRef = useRef({});
   const [flashMap, setFlashMap] = useState({});
   const [changeMap, setChangeMap] = useState({});
 
+  // ================= HOLDING QTY =================
   const getHoldingQty = (symbol) => {
     const h = holdings.find(x => x.symbol === symbol);
     return h ? h.quantity : 0;
   };
 
-  // ✅ Detect price movement + percentage
+  // ================= PRICE MOVEMENT DETECTION =================
   useEffect(() => {
     const flashes = {};
     const changes = {};
@@ -52,19 +56,44 @@ const Market = ({
     return () => clearTimeout(timer);
   }, [prices]);
 
-  // ✅ Sort by biggest movers
+  // ================= WATCHLIST TOGGLE =================
+  const toggleWatchlist = async (symbol) => {
+    try {
+      const res = await api.post("/api/watchlist/toggle", { symbol });
+      setWatchlist(res.data);
+    } catch (err) {
+      console.error("Watchlist update failed");
+    }
+  };
+
+  // ================= SORTING =================
+  // Priority:
+  // 1️⃣ Watchlist stocks
+  // 2️⃣ Biggest movers
   const sortedMarket = useMemo(() => {
     return Object.entries(prices).sort((a, b) => {
+
+      const aFav = watchlist.includes(a[0]);
+      const bFav = watchlist.includes(b[0]);
+
+      // Watchlist first
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
+
+      // Then biggest movers
       const changeA = Math.abs(changeMap[a[0]] || 0);
       const changeB = Math.abs(changeMap[b[0]] || 0);
+
       return changeB - changeA;
     });
-  }, [prices, changeMap]);
+  }, [prices, changeMap, watchlist]);
 
+  // ================= GUARD =================
   if (!prices || Object.keys(prices).length === 0) {
     return <p>Loading market data...</p>;
   }
 
+  // ================= UI =================
   return (
     <div>
       <h3>Market</h3>
@@ -79,6 +108,19 @@ const Market = ({
 
         return (
           <div key={symbol} style={{ padding: "6px 0" }}>
+
+            {/* ⭐ WATCHLIST STAR */}
+            <span
+              style={{
+                cursor: "pointer",
+                marginRight: "6px",
+                fontSize: "16px"
+              }}
+              onClick={() => toggleWatchlist(symbol)}
+            >
+              {watchlist.includes(symbol) ? "⭐" : "☆"}
+            </span>
+
             <strong>{symbol}</strong>{" "}
 
             <span

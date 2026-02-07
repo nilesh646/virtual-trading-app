@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 100000
   },
+  watchlist: {
+    type: [String],
+    default: []
+  },
   holdings: [
     {
       symbol: String,

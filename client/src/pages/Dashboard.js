@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [wallet, setWallet] = useState(null);
   const [equityCurve, setEquityCurve] = useState([]);
   const [marketData, setMarketData] = useState({});
+  const [watchlist, setWatchlist] = useState([]);
 
   // 🔐 REDIRECT IF LOGGED OUT (MUST BE BEFORE ANY RETURNS)
   // useEffect(() => {
@@ -120,6 +121,16 @@ const Dashboard = () => {
     [loadWallet, loadPrices, loadEquityCurve]
   );
 
+  const loadWatchlist = useCallback(async () => {
+    try {
+      const res = await api.get("/api/watchlist");
+      setWatchlist(res.data || []);
+    } catch (err) {
+      console.error("Watchlist load failed", err);
+    }
+  }, []);
+
+
   // ================= AUTO REFRESH =================
   useEffect(() => {
     if (!token) return;
@@ -127,6 +138,7 @@ const Dashboard = () => {
     loadWallet();
     loadPrices();
     loadEquityCurve();
+    loadWatchlist();
 
     const interval = setInterval(() => {
       loadPrices();
@@ -134,7 +146,7 @@ const Dashboard = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [token, loadWallet, loadPrices, loadEquityCurve]);
+  }, [token, loadWallet, loadPrices, loadEquityCurve, loadWatchlist]);
 
   // ⏳ WAIT FOR WALLET
   if (!wallet && token) return <p>Loading wallet...</p>;
@@ -165,6 +177,8 @@ const Dashboard = () => {
                 buyStock={buyStock}
                 sellStock={sellStock}
                 refreshWallet={loadWallet}
+                watchlist={watchlist}
+                setWatchlist={setWatchlist}
               />
             }
           />

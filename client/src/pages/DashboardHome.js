@@ -7,7 +7,9 @@ const DashboardHome = ({
   marketData,
   buyStock,
   sellStock,
-  refreshWallet
+  refreshWallet,
+  watchlist,
+  setWatchlist
 }) => {
   if (!wallet) return null;
 
@@ -32,6 +34,8 @@ const DashboardHome = ({
               prices={marketData}
               balance={wallet.balance}
               holdings={wallet.holdings}
+              watchlist={watchlist}
+              setWatchlist={setWatchlist}
               onBuy={buyStock}
               onSell={sellStock}
             />

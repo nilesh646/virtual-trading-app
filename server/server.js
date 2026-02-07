@@ -42,6 +42,7 @@ app.use("/api/wallet", walletRoute);
 app.use("/api/history", historyRoute);
 app.use("/api/analytics", analyticsRoute);
 app.use("/api/analytics/leaders", require("./routes/leaders"));
+app.use("/api/watchlist", require("./routes/watchlist"));
 
 // ✅ FIXED PORT
 const PORT = process.env.PORT || 5000;
