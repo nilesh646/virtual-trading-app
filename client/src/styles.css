@@ -346,3 +346,106 @@ input, textarea, select {
 .heatmap-cell:hover {
   transform: scale(1.05);
 }
+
+
+.sector-strength {
+  background: #111827;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.sector-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sector-bar-wrapper {
+  flex: 1;
+  height: 8px;
+  background: #1f2937;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sector-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.heatmap-hot {
+  box-shadow: 0 0 12px rgba(0, 255, 140, 0.7);
+  border: 1px solid #00c853;
+  transform: scale(1.03);
+}
+
+.heatmap-hot {
+  box-shadow: 0 0 14px rgba(0,255,140,0.8);
+  border: 1px solid #00c853;
+  transform: scale(1.04);
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.badge.breakout {
+  background: #ff9800;
+  color: black;
+}
+
+.badge.momentum {
+  background: #00c853;
+  color: white;
+}
+
+.badge.weak {
+  background: #ff5252;
+  color: white;
+}
+
+.badge.cooling {
+  background: #607d8b;
+  color: white;
+}
+
+/* ===== TOP MOVERS GLOW ===== */
+.top-mover {
+  box-shadow: 0 0 12px rgba(0, 255, 150, 0.8);
+  animation: glowPulse 1.2s infinite alternate;
+}
+
+@keyframes glowPulse {
+  from { box-shadow: 0 0 8px rgba(0,255,150,0.4); }
+  to { box-shadow: 0 0 18px rgba(0,255,150,1); }
+}
+
+/* ===== MOMENTUM STOCK ===== */
+.momentum-stock {
+  border: 2px solid #00c853;
+  animation: pulseBorder 1s infinite;
+}
+
+@keyframes pulseBorder {
+  0% { border-color: #00c853; }
+  50% { border-color: #69f0ae; }
+  100% { border-color: #00c853; }
+}
+
+/* ===== WEAK STOCK ===== */
+.weak-stock {
+  opacity: 0.65;
+  filter: grayscale(30%);
+}
+
+.top-mover {
+  border: 2px solid gold;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
