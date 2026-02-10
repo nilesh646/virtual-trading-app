@@ -10,47 +10,66 @@ router.get("/", auth, async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const alerts = [];
+    const updatedWatchlist = new Set(user.watchlist || []);
 
-    // check holdings for SL alerts
     for (const holding of user.holdings) {
       const stock = await getStockPrice(holding.symbol);
       if (!stock) continue;
 
       const price = stock.price;
+      const change = Number(stock.changePercent || 0);
 
-      // STOP LOSS WARNING
+      // ================= HIGH PRIORITY =================
+      if (change > 2) {
+        alerts.push({
+          type: "breakout",
+          priority: "HIGH",
+          symbol: holding.symbol,
+          message: `🔥 ${holding.symbol} breakout ${change.toFixed(2)}%`,
+          price
+        });
+
+        // auto add to watchlist
+        updatedWatchlist.add(holding.symbol);
+      }
+
+      // ================= MEDIUM PRIORITY =================
+      else if (change > 1) {
+        alerts.push({
+          type: "momentum",
+          priority: "MEDIUM",
+          symbol: holding.symbol,
+          message: `🚀 ${holding.symbol} strong momentum`,
+          price
+        });
+      }
+
+      // ================= LOW PRIORITY =================
       if (
         holding.stopLoss &&
         price <= holding.stopLoss * 1.02
       ) {
         alerts.push({
           type: "stoploss",
+          priority: "LOW",
           symbol: holding.symbol,
           message: `⚠ ${holding.symbol} near Stop Loss`,
           price
         });
       }
-
-      // BREAKOUT
-      if (stock.changePercent > 2) {
-        alerts.push({
-          type: "breakout",
-          symbol: holding.symbol,
-          message: `🔥 ${holding.symbol} breakout ${stock.changePercent.toFixed(2)}%`,
-          price
-        });
-      }
-
-      // MOMENTUM
-      if (stock.changePercent > 1) {
-        alerts.push({
-          type: "momentum",
-          symbol: holding.symbol,
-          message: `🚀 ${holding.symbol} strong momentum`,
-          price
-        });
-      }
     }
+
+    // Save updated watchlist automatically
+    user.watchlist = Array.from(updatedWatchlist);
+    await user.save();
+
+    // Sort by priority
+    const priorityOrder = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+
+    alerts.sort(
+      (a, b) =>
+        priorityOrder[b.priority] - priorityOrder[a.priority]
+    );
 
     res.json(alerts);
   } catch (err) {

@@ -15,12 +15,17 @@ const MarketAlerts = () => {
 
   useEffect(() => {
     loadAlerts();
-
     const interval = setInterval(loadAlerts, 5000);
     return () => clearInterval(interval);
   }, []);
 
   if (!alerts.length) return null;
+
+  const getColor = (priority) => {
+    if (priority === "HIGH") return "#ff5252";
+    if (priority === "MEDIUM") return "#ffb300";
+    return "#64b5f6";
+  };
 
   return (
     <div className="card">
@@ -30,11 +35,17 @@ const MarketAlerts = () => {
         <div
           key={i}
           style={{
-            padding: "6px",
-            borderBottom: "1px solid #eee"
+            padding: "8px",
+            marginBottom: "6px",
+            borderRadius: "6px",
+            background: "#111827",
+            borderLeft: `4px solid ${getColor(a.priority)}`
           }}
         >
-          {a.message}
+          <strong style={{ color: getColor(a.priority) }}>
+            {a.priority}
+          </strong>{" "}
+          — {a.message}
         </div>
       ))}
     </div>
