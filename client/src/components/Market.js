@@ -19,13 +19,13 @@ const Market = ({
   const [search, setSearch] = useState("");
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
 
-  // ================= HOLDING QTY =================
+  /* ================= HOLDING QTY ================= */
   const getHoldingQty = (symbol) => {
     const h = holdings.find(x => x.symbol === symbol);
     return h ? h.quantity : 0;
   };
 
-  // ================= PRICE MOVEMENT =================
+  /* ================= PRICE MOVEMENT ================= */
   useEffect(() => {
     const flashes = {};
     const changes = {};
@@ -48,23 +48,16 @@ const Market = ({
     setFlashMap(flashes);
     setChangeMap(changes);
 
-    // remove flash after animation
-    const timer = setTimeout(() => {
-      setFlashMap({});
-    }, 500);
+    const timer = setTimeout(() => setFlashMap({}), 500);
 
     prevPricesRef.current = Object.fromEntries(
-      Object.entries(prices).map(([s, v]) => [
-        s,
-        Number(v.price)
-      ])
+      Object.entries(prices).map(([s, v]) => [s, Number(v.price)])
     );
 
     return () => clearTimeout(timer);
   }, [prices]);
 
-
-  // ================= WATCHLIST TOGGLE =================
+  /* ================= WATCHLIST ================= */
   const toggleWatchlist = async (symbol) => {
     try {
       const res = await api.post("/api/watchlist/toggle", { symbol });
@@ -74,25 +67,22 @@ const Market = ({
     }
   };
 
-  // ================= SORT + FILTER =================
+  /* ================= SORT + FILTER ================= */
   const sortedMarket = useMemo(() => {
     let entries = Object.entries(prices);
 
-    // search filter
-    if (search.trim() !== "") {
+    if (search.trim()) {
       entries = entries.filter(([symbol]) =>
         symbol.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    // watchlist only filter
     if (showWatchlistOnly) {
       entries = entries.filter(([symbol]) =>
         watchlist.includes(symbol)
       );
     }
 
-    // sort by biggest movers
     return entries.sort((a, b) => {
       const changeA = Math.abs(changeMap[a[0]] || 0);
       const changeB = Math.abs(changeMap[b[0]] || 0);
@@ -100,7 +90,6 @@ const Market = ({
     });
   }, [prices, changeMap, search, showWatchlistOnly, watchlist]);
 
-  // split sections
   const watchlistMarket = sortedMarket.filter(([s]) =>
     watchlist.includes(s)
   );
@@ -109,7 +98,7 @@ const Market = ({
     ([s]) => !watchlist.includes(s)
   );
 
-  // ================= ROW RENDER =================
+  /* ================= ROW ================= */
   const renderRow = ([symbol, stock]) => {
     const price = Number(stock?.price || 0);
     const ownedQty = getHoldingQty(symbol);
@@ -118,8 +107,22 @@ const Market = ({
     const percent = changeMap[symbol] || 0;
     const isUp = percent >= 0;
 
+    const strongMove = Math.abs(percent) > 0.8;
+
     return (
-      <div key={symbol} style={{ padding: "6px 0" }}>
+      <div
+        key={symbol}
+        style={{
+          padding: "8px 0",
+          borderBottom: "1px solid #1f2937",
+          background: strongMove
+            ? percent > 0
+              ? "rgba(0,200,83,0.08)"
+              : "rgba(255,82,82,0.08)"
+            : "transparent"
+        }}
+      >
+        {/* Watchlist Star */}
         <span
           style={{ cursor: "pointer", marginRight: "6px" }}
           onClick={() => toggleWatchlist(symbol)}
@@ -129,7 +132,8 @@ const Market = ({
 
         <strong>{symbol}</strong>
 
-       <span
+        {/* PRICE */}
+        <span
           className={
             flashMap[symbol] === "up"
               ? "price-up"
@@ -137,15 +141,12 @@ const Market = ({
               ? "price-down"
               : ""
           }
-          style={{
-            padding: "2px 6px",
-            borderRadius: "4px",
-            transition: "all 0.3s ease"
-          }}
+          style={{ marginLeft: "6px" }}
         >
           ₹{price.toFixed(2)}
         </span>
 
+        {/* CHANGE */}
         <span
           style={{
             marginLeft: "10px",
@@ -156,9 +157,17 @@ const Market = ({
           {isUp ? "↑" : "↓"} {percent.toFixed(2)}%
         </span>
 
-        <Sparkline data={priceHistory[symbol] || []} />
+        {/* OWNED QTY */}
+        {ownedQty > 0 && (
+          <span style={{ marginLeft: "10px", color: "#60a5fa" }}>
+            Qty: {ownedQty}
+          </span>
+        )}
 
-        <br />
+        {/* SPARKLINE */}
+        <div style={{ marginTop: "4px" }}>
+          <Sparkline data={priceHistory[symbol] || []} />
+        </div>
 
         <button disabled={!canBuy} onClick={() => onBuy(symbol)}>
           Buy 1
@@ -171,25 +180,23 @@ const Market = ({
         >
           Sell 1
         </button>
-
-        <hr />
       </div>
     );
   };
 
-  // ================= GUARD =================
+  /* ================= GUARD ================= */
   if (!prices || Object.keys(prices).length === 0) {
     return <p>Loading market data...</p>;
   }
 
-  // ================= UI =================
+  /* ================= UI ================= */
   return (
     <div>
       <h3>Market</h3>
 
       <div style={{ marginBottom: "10px" }}>
         <input
-          placeholder="Search symbol (AAPL, TSLA...)"
+          placeholder="Search symbol..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ marginRight: "10px" }}
@@ -200,7 +207,6 @@ const Market = ({
         </button>
       </div>
 
-      {/* ⭐ WATCHLIST */}
       {watchlistMarket.length > 0 && (
         <>
           <h4 style={{ color: "#60a5fa" }}>⭐ Watchlist</h4>
@@ -208,7 +214,6 @@ const Market = ({
         </>
       )}
 
-      {/* 🔥 MARKET MOVERS */}
       <h4 style={{ color: "#facc15" }}>🔥 Market Movers</h4>
       {normalMarket.map(renderRow)}
     </div>

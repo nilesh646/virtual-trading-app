@@ -39,8 +39,11 @@ const DashboardHome = ({
         {/* LEFT SIDE — MARKET AREA */}
         <div className="market-panel">
 
+           <div className="card">
+              <MarketAlerts prices={marketData} />
+            </div>
+
           <div className="card">
-            <MarketAlerts />
             
             <Market
               prices={marketData}

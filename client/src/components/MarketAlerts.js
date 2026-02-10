@@ -1,51 +1,66 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useMemo } from "react";
 
-const MarketAlerts = () => {
-  const [alerts, setAlerts] = useState([]);
+const MarketAlerts = ({ prices = {} }) => {
 
-  const loadAlerts = async () => {
-    try {
-      const res = await api.get("/api/alerts");
-      setAlerts(res.data || []);
-    } catch (err) {
-      console.error("Alert load failed");
-    }
-  };
+  // ✅ SAFE ALERT GENERATION
+  const alerts = useMemo(() => {
+    const list = [];
 
-  useEffect(() => {
-    loadAlerts();
-    const interval = setInterval(loadAlerts, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    Object.entries(prices).forEach(([symbol, stock]) => {
+      const price = Number(stock?.price ?? 0);
+      const change = Number(stock?.changePercent ?? 0);
 
-  if (!alerts.length) return null;
+      // skip invalid data
+      if (!price || isNaN(price)) return;
 
-  const getColor = (priority) => {
-    if (priority === "HIGH") return "#ff5252";
-    if (priority === "MEDIUM") return "#ffb300";
-    return "#64b5f6";
-  };
+      if (change > 1.5) {
+        list.push({
+          symbol,
+          type: "breakout",
+          message: "🔥 Strong breakout"
+        });
+      } else if (change > 0.8) {
+        list.push({
+          symbol,
+          type: "momentum",
+          message: "🚀 Strong momentum"
+        });
+      } else if (change < -1.2) {
+        list.push({
+          symbol,
+          type: "drop",
+          message: "⚠ Sharp drop"
+        });
+      }
+    });
+
+    return list.slice(0, 5);
+  }, [prices]);
+
+  // ✅ guard AFTER hooks
+  if (!prices || Object.keys(prices).length === 0) {
+    return <p>Loading alerts...</p>;
+  }
+
+  if (!alerts.length) {
+    return <p>No major alerts</p>;
+  }
 
   return (
-    <div className="card">
+    <div>
       <h3>Market Alerts</h3>
 
       {alerts.map((a, i) => (
         <div
           key={i}
           style={{
-            padding: "8px",
-            marginBottom: "6px",
+            background: "#1e293b",
+            padding: "10px",
             borderRadius: "6px",
-            background: "#111827",
-            borderLeft: `4px solid ${getColor(a.priority)}`
+            marginBottom: "8px"
           }}
         >
-          <strong style={{ color: getColor(a.priority) }}>
-            {a.priority}
-          </strong>{" "}
-          — {a.message}
+          <strong>{a.symbol}</strong> — {a.message}
         </div>
       ))}
     </div>
