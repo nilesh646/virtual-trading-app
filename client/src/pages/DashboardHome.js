@@ -2,6 +2,7 @@ import Market from "../components/Market";
 import Trade from "../components/Trade";
 import MarketMovers from "../components/MarketMovers";
 import MarketHeatmap from "../components/MarketHeatmap";
+import MarketAlerts from "../components/MarketAlerts";
 
 const DashboardHome = ({
   wallet,
@@ -39,6 +40,8 @@ const DashboardHome = ({
         <div className="market-panel">
 
           <div className="card">
+            <MarketAlerts />
+            
             <Market
               prices={marketData}
               balance={wallet.balance}
