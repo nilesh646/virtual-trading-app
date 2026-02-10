@@ -1,21 +1,39 @@
 const Sparkline = ({ data = [], width = 80, height = 30 }) => {
-  if (!data.length) return null;
 
-  const max = Math.max(...data);
-  const min = Math.min(...data);
+  // ✅ Remove invalid values (VERY IMPORTANT)
+  const safeData = data.filter(
+    v => typeof v === "number" && !isNaN(v)
+  );
 
-  const points = data
+  // nothing valid to draw
+  if (safeData.length < 2) return null;
+
+  const max = Math.max(...safeData);
+  const min = Math.min(...safeData);
+
+  // avoid divide-by-zero when all prices equal
+  const range = max - min === 0 ? 1 : max - min;
+
+  const points = safeData
     .map((price, i) => {
-      const x = (i / (data.length - 1)) * width;
+      const x = (i / (safeData.length - 1)) * width;
+
       const y =
         height -
-        ((price - min) / (max - min || 1)) * height;
+        ((price - min) / range) * height;
+
+      // extra safety guard
+      if (isNaN(x) || isNaN(y)) return null;
 
       return `${x},${y}`;
     })
+    .filter(Boolean)
     .join(" ");
 
-  const isUp = data[data.length - 1] >= data[0];
+  if (!points) return null;
+
+  const isUp =
+    safeData[safeData.length - 1] >= safeData[0];
 
   return (
     <svg width={width} height={height}>

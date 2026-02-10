@@ -75,7 +75,10 @@ const Dashboard = () => {
             historyUpdate[stock.symbol] = [];
           }
 
-          historyUpdate[stock.symbol].push(price);
+          // historyUpdate[stock.symbol].push(price);
+          if (!isNaN(price)) {
+            historyUpdate[stock.symbol].push(price);
+          }
 
           // keep only last 30 points
           if (historyUpdate[stock.symbol].length > 30) {
