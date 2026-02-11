@@ -1,66 +1,88 @@
 import { useMemo } from "react";
+import { SECTOR_MAP } from "../data/sectors";
 
-const MarketAlerts = ({ prices = {} }) => {
+const MarketAlerts = ({
+  prices = {},
+  changeMap = {},
+  momentumScore = {},
+  sectorStrength = []
+}) => {
 
-  // ✅ SAFE ALERT GENERATION
+  const strongestSector =
+    sectorStrength.length > 0 ? sectorStrength[0][0] : null;
+
   const alerts = useMemo(() => {
     const list = [];
 
     Object.entries(prices).forEach(([symbol, stock]) => {
-      const price = Number(stock?.price ?? 0);
-      const change = Number(stock?.changePercent ?? 0);
+      const change = Number(changeMap[symbol] || 0);
+      const momentum = Number(momentumScore[symbol] || 50);
+      const sector = SECTOR_MAP[symbol] || "Others";
 
-      // skip invalid data
-      if (!price || isNaN(price)) return;
+      // ================= BREAKOUT =================
+      if (momentum > 75 && change > 1) {
+        list.push({
+          priority: 1,
+          text: `🔥 ${symbol} strong breakout (Momentum ${momentum})`,
+          color: "#00c853"
+        });
+      }
 
-      if (change > 1.5) {
+      // ================= SECTOR MOMENTUM =================
+      else if (
+        sector === strongestSector &&
+        momentum > 65 &&
+        change > 0.5
+      ) {
         list.push({
-          symbol,
-          type: "breakout",
-          message: "🔥 Strong breakout"
+          priority: 2,
+          text: `⚡ ${symbol} rising with strong ${sector} sector`,
+          color: "#ffb300"
         });
-      } else if (change > 0.8) {
+      }
+
+      // ================= WEAKENING =================
+      else if (momentum < 40 && change < -0.5) {
         list.push({
-          symbol,
-          type: "momentum",
-          message: "🚀 Strong momentum"
+          priority: 3,
+          text: `⚠ ${symbol} weakening trend`,
+          color: "#ff5252"
         });
-      } else if (change < -1.2) {
+      }
+
+      // ================= HIGH VOLATILITY =================
+      else if (Math.abs(change) > 1.5) {
         list.push({
-          symbol,
-          type: "drop",
-          message: "⚠ Sharp drop"
+          priority: 4,
+          text: `📉 ${symbol} high volatility (${change.toFixed(2)}%)`,
+          color: "#ffa726"
         });
       }
     });
 
-    return list.slice(0, 5);
-  }, [prices]);
+    // sort by priority
+    return list
+      .sort((a, b) => a.priority - b.priority)
+      .slice(0, 6);
 
-  // ✅ guard AFTER hooks
-  if (!prices || Object.keys(prices).length === 0) {
-    return <p>Loading alerts...</p>;
-  }
+  }, [prices, changeMap, momentumScore,  strongestSector]);
 
-  if (!alerts.length) {
-    return <p>No major alerts</p>;
-  }
+  if (!alerts.length) return null;
 
   return (
-    <div>
-      <h3>Market Alerts</h3>
+    <div className="card" style={{ marginBottom: "15px" }}>
+      <h4>🚨 Smart Market Alerts</h4>
 
       {alerts.map((a, i) => (
         <div
           key={i}
           style={{
-            background: "#1e293b",
-            padding: "10px",
-            borderRadius: "6px",
-            marginBottom: "8px"
+            padding: "6px 0",
+            fontWeight: "bold",
+            color: a.color
           }}
         >
-          <strong>{a.symbol}</strong> — {a.message}
+          {a.text}
         </div>
       ))}
     </div>

@@ -20,6 +20,8 @@ import HistoryPage from "./HistoryPage";
 import StrategyPage from "./StrategyPage";
 import AIPage from "./AIPage";
 
+import { SECTOR_MAP } from "../data/sectors";
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { logout, token } = useContext(AuthContext);
@@ -30,15 +32,9 @@ const Dashboard = () => {
   const [watchlist, setWatchlist] = useState([]);
   const [priceHistory, setPriceHistory] = useState({});
 
-
-  // 🔐 REDIRECT IF LOGGED OUT (MUST BE BEFORE ANY RETURNS)
-  // useEffect(() => {
-  //   if (!token) {
-  //     navigate("/login");
-  //   }
-  // }, [token, navigate]);
-
-  // ================= LOAD WALLET =================
+  /* =====================================================
+     LOAD WALLET
+  ===================================================== */
   const loadWallet = useCallback(async () => {
     try {
       const res = await api.get("/api/wallet");
@@ -48,7 +44,9 @@ const Dashboard = () => {
     }
   }, []);
 
-  // ================= LOAD MARKET PRICES =================
+  /* =====================================================
+     LOAD MARKET PRICES
+  ===================================================== */
   const loadPrices = useCallback(async () => {
     try {
       const res = await api.get("/api/market");
@@ -64,31 +62,27 @@ const Dashboard = () => {
         };
       });
 
-      // ✅ SAFE history update (NO dependency warning)
-      setPriceHistory(prevHistory => {
-        const historyUpdate = { ...prevHistory };
+      // SAFE HISTORY UPDATE
+      setPriceHistory(prev => {
+        const updated = { ...prev };
 
         res.data.forEach(stock => {
           const price = Number(stock.price);
+          if (isNaN(price)) return;
 
-          if (!historyUpdate[stock.symbol]) {
-            historyUpdate[stock.symbol] = [];
+          if (!updated[stock.symbol]) {
+            updated[stock.symbol] = [];
           }
 
-          // historyUpdate[stock.symbol].push(price);
-          if (!isNaN(price)) {
-            historyUpdate[stock.symbol].push(price);
-          }
+          updated[stock.symbol].push(price);
 
-          // keep only last 30 points
-          if (historyUpdate[stock.symbol].length > 30) {
-            historyUpdate[stock.symbol].shift();
+          if (updated[stock.symbol].length > 30) {
+            updated[stock.symbol].shift();
           }
         });
 
-        return historyUpdate;
+        return updated;
       });
-
 
       setMarketData(freshMarket);
 
@@ -97,7 +91,11 @@ const Dashboard = () => {
     }
   }, []);
 
+  /* =====================================================
+     GLOBAL MARKET INTELLIGENCE (WEEK 15 DAY 7)
+  ===================================================== */
 
+  // price map
   const prices = useMemo(() => {
     const map = {};
     Object.entries(marketData).forEach(([symbol, data]) => {
@@ -106,17 +104,67 @@ const Dashboard = () => {
     return map;
   }, [marketData]);
 
-  // ================= LOAD EQUITY CURVE =================
+  // % change map
+  const changeMap = useMemo(() => {
+    const map = {};
+    Object.entries(marketData).forEach(([symbol, stock]) => {
+      map[symbol] = Number(stock.changePercent || 0);
+    });
+    return map;
+  }, [marketData]);
+
+  // momentum score (0–100)
+  const momentumScore = useMemo(() => {
+    const scores = {};
+
+    Object.entries(marketData).forEach(([symbol, stock]) => {
+      const change = Number(stock.changePercent || 0);
+
+      scores[symbol] = Math.round(
+        Math.min(100, Math.max(0, change * 20 + 50))
+      );
+    });
+
+    return scores;
+  }, [marketData]);
+
+  // sector strength
+  const sectorStrength = useMemo(() => {
+    const sectors = {};
+
+    Object.entries(marketData).forEach(([symbol, stock]) => {
+      const sector = SECTOR_MAP[symbol] || "Others";
+      const change = Number(stock.changePercent || 0);
+
+      if (!sectors[sector]) sectors[sector] = [];
+      sectors[sector].push(change);
+    });
+
+    const result = {};
+
+    Object.entries(sectors).forEach(([sector, values]) => {
+      result[sector] =
+        values.reduce((a, b) => a + b, 0) / values.length;
+    });
+
+    return result;
+  }, [marketData]);
+
+  /* =====================================================
+     LOAD EQUITY CURVE
+  ===================================================== */
   const loadEquityCurve = useCallback(async () => {
     try {
       const res = await api.get("/api/analytics/equity-curve");
       setEquityCurve(res.data);
     } catch (err) {
-      console.error("Equity curve load failed", err);
+      console.error("Equity curve load failed");
     }
   }, []);
 
-  // ================= BUY =================
+  /* =====================================================
+     BUY / SELL
+  ===================================================== */
   const buyStock = useCallback(
     async (symbol, stopLoss = null, takeProfit = null) => {
       try {
@@ -138,7 +186,6 @@ const Dashboard = () => {
     [loadWallet, loadPrices, loadEquityCurve]
   );
 
-  // ================= SELL =================
   const sellStock = useCallback(
     async (symbol) => {
       try {
@@ -154,6 +201,9 @@ const Dashboard = () => {
     [loadWallet, loadPrices, loadEquityCurve]
   );
 
+  /* =====================================================
+     WATCHLIST
+  ===================================================== */
   const loadWatchlist = useCallback(async () => {
     try {
       const res = await api.get("/api/watchlist");
@@ -163,8 +213,9 @@ const Dashboard = () => {
     }
   }, []);
 
-
-  // ================= AUTO REFRESH =================
+  /* =====================================================
+     AUTO REFRESH
+  ===================================================== */
   useEffect(() => {
     if (!token) return;
 
@@ -179,11 +230,19 @@ const Dashboard = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [token, loadWallet, loadPrices, loadEquityCurve, loadWatchlist]);
+  }, [
+    token,
+    loadWallet,
+    loadPrices,
+    loadEquityCurve,
+    loadWatchlist
+  ]);
 
-  // ⏳ WAIT FOR WALLET
   if (!wallet && token) return <p>Loading wallet...</p>;
 
+  /* =====================================================
+     UI
+  ===================================================== */
   return (
     <div className="dashboard-layout">
       <Sidebar />
@@ -198,7 +257,6 @@ const Dashboard = () => {
         >
           Logout
         </button>
-        
 
         <Routes>
           <Route
@@ -213,6 +271,9 @@ const Dashboard = () => {
                 watchlist={watchlist}
                 setWatchlist={setWatchlist}
                 priceHistory={priceHistory}
+                changeMap={changeMap}
+                momentumScore={momentumScore}
+                sectorStrength={sectorStrength}
               />
             }
           />
@@ -237,9 +298,6 @@ const Dashboard = () => {
           <Route path="ai" element={<AIPage />} />
           <Route path="history" element={<HistoryPage />} />
         </Routes>
-
-        
-
       </div>
     </div>
   );

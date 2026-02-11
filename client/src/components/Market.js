@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import api from "../api/axios";
 import Sparkline from "./Sparkline";
+import MarketAlerts from "./MarketAlerts";
 
 const Market = ({
   prices = {},
@@ -192,6 +193,16 @@ const Market = ({
   /* ================= UI ================= */
   return (
     <div>
+
+      <MarketAlerts
+        prices={prices}
+        changeMap={changeMap}
+        momentumScore={{}}
+        sectorStrength={[]}
+      />
+      
+
+
       <h3>Market</h3>
 
       <div style={{ marginBottom: "10px" }}>
