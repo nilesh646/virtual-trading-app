@@ -150,6 +150,56 @@ const Dashboard = () => {
     return result;
   }, [marketData]);
 
+  const opportunityMap = useMemo(() => {
+    const map = {};
+
+    Object.entries(marketData).forEach(([symbol, stock]) => {
+      const change = Number(stock.changePercent || 0);
+      const momentum = momentumScore[symbol] || 0;
+
+      if (momentum > 75 && change > 0.5) {
+        map[symbol] = {
+          type: "momentum",
+          confidence: "HIGH"
+        };
+      } else if (momentum > 60 && change > 0.2) {
+        map[symbol] = {
+          type: "trend",
+          confidence: "MEDIUM"
+        };
+      }
+    });
+
+    return map;
+  }, [marketData, momentumScore]);
+
+
+  // ================= TRADE SCORE (WEEK 16 DAY 1) =================
+  const tradeScore = useMemo(() => {
+    const scores = {};
+
+    Object.entries(marketData).forEach(([symbol, stock]) => {
+      const change = Number(stock.changePercent || 0);
+      const momentum = momentumScore[symbol] || 50;
+
+      const sector = SECTOR_MAP[symbol] || "Others";
+      const sectorValue = sectorStrength[sector] || 0;
+
+      // normalize values to 0–100 scale
+      const changeScore = Math.min(100, Math.max(0, change * 20 + 50));
+      const sectorScore = Math.min(100, Math.max(0, sectorValue * 20 + 50));
+
+      const score =
+        momentum * 0.5 +
+        changeScore * 0.3 +
+        sectorScore * 0.2;
+
+      scores[symbol] = Math.round(score);
+    });
+
+    return scores;
+  }, [marketData, momentumScore, sectorStrength]);
+
   /* =====================================================
      LOAD EQUITY CURVE
   ===================================================== */
@@ -212,6 +262,7 @@ const Dashboard = () => {
       console.error("Watchlist load failed", err);
     }
   }, []);
+  
 
   /* =====================================================
      AUTO REFRESH
@@ -274,6 +325,8 @@ const Dashboard = () => {
                 changeMap={changeMap}
                 momentumScore={momentumScore}
                 sectorStrength={sectorStrength}
+                tradeScore={tradeScore}
+                opportunityMap={opportunityMap}
               />
             }
           />

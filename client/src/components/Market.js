@@ -11,7 +11,9 @@ const Market = ({
   holdings = [],
   watchlist = [],
   setWatchlist,
-  priceHistory = {}
+  priceHistory = {},
+  tradeScore = {},
+  opportunityMap = {}
 }) => {
 
   const prevPricesRef = useRef({});
@@ -25,6 +27,23 @@ const Market = ({
     const h = holdings.find(x => x.symbol === symbol);
     return h ? h.quantity : 0;
   };
+
+  // ================= ENTRY TIMING (WEEK 16 DAY 2) =================
+  const getEntryTiming = (symbol, percent) => {
+    const score = tradeScore[symbol] || 50;
+
+    if (score >= 70 && percent < 1)
+      return { label: "Early Entry", color: "#00c853" };
+
+    if (score >= 70 && percent >= 1)
+      return { label: "Extended", color: "#ffb300" };
+
+    if (score < 40)
+      return { label: "Late Entry", color: "#ff5252" };
+
+    return null;
+  };
+
 
   /* ================= PRICE MOVEMENT ================= */
   useEffect(() => {
@@ -72,12 +91,14 @@ const Market = ({
   const sortedMarket = useMemo(() => {
     let entries = Object.entries(prices);
 
+    // SEARCH FILTER
     if (search.trim()) {
       entries = entries.filter(([symbol]) =>
         symbol.toLowerCase().includes(search.toLowerCase())
       );
     }
 
+    // WATCHLIST FILTER
     if (showWatchlistOnly) {
       entries = entries.filter(([symbol]) =>
         watchlist.includes(symbol)
@@ -85,11 +106,36 @@ const Market = ({
     }
 
     return entries.sort((a, b) => {
+      const aiA = opportunityMap[a[0]];
+      const aiB = opportunityMap[b[0]];
+
+      // ✅ AI HIGH FIRST
+      if (aiA?.confidence === "HIGH" && aiB?.confidence !== "HIGH")
+        return -1;
+      if (aiB?.confidence === "HIGH" && aiA?.confidence !== "HIGH")
+        return 1;
+
+      // ✅ AI MEDIUM NEXT
+      if (aiA?.confidence === "MEDIUM" && !aiB)
+        return -1;
+      if (aiB?.confidence === "MEDIUM" && !aiA)
+        return 1;
+
+      // ✅ WATCHLIST PRIORITY
+      const watchA = watchlist.includes(a[0]);
+      const watchB = watchlist.includes(b[0]);
+
+      if (watchA && !watchB) return -1;
+      if (watchB && !watchA) return 1;
+
+      // ✅ NORMAL SORT BY MOVEMENT
       const changeA = Math.abs(changeMap[a[0]] || 0);
       const changeB = Math.abs(changeMap[b[0]] || 0);
+
       return changeB - changeA;
     });
-  }, [prices, changeMap, search, showWatchlistOnly, watchlist]);
+  }, [prices, changeMap, search, showWatchlistOnly, watchlist, opportunityMap]);
+
 
   const watchlistMarket = sortedMarket.filter(([s]) =>
     watchlist.includes(s)
@@ -107,6 +153,9 @@ const Market = ({
 
     const percent = changeMap[symbol] || 0;
     const isUp = percent >= 0;
+    const entry = getEntryTiming(symbol, percent);
+    const opportunity = opportunityMap[symbol];
+
 
     const strongMove = Math.abs(percent) > 0.8;
 
@@ -116,11 +165,14 @@ const Market = ({
         style={{
           padding: "8px 0",
           borderBottom: "1px solid #1f2937",
-          background: strongMove
+          background: opportunity
+            ? "rgba(255,215,0,0.08)"
+            : strongMove
             ? percent > 0
               ? "rgba(0,200,83,0.08)"
               : "rgba(255,82,82,0.08)"
-            : "transparent"
+            : "transparent",
+          borderLeft: opportunity ? "3px solid gold" : "none"
         }}
       >
         {/* Watchlist Star */}
@@ -132,6 +184,27 @@ const Market = ({
         </span>
 
         <strong>{symbol}</strong>
+
+        {opportunity && (
+          <button
+            onClick={() => onBuy(symbol)}
+            style={{
+              marginLeft: "8px",
+              padding: "2px 6px",
+              borderRadius: "4px",
+              fontSize: "11px",
+              background:
+                opportunity.confidence === "HIGH"
+                  ? "#00c853"
+                  : opportunity.confidence === "MEDIUM"
+                  ? "#ffb300"
+                  : "#ff5252",
+              color: "white"
+            }}
+          >
+            AI {opportunity.confidence}
+          </button>
+        )}
 
         {/* PRICE */}
         <span
@@ -157,6 +230,20 @@ const Market = ({
         >
           {isUp ? "↑" : "↓"} {percent.toFixed(2)}%
         </span>
+
+        {entry && (
+          <span
+            style={{
+              marginLeft: "10px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              color: entry.color
+            }}
+          >
+            ● {entry.label}
+          </span>
+        )}
+
 
         {/* OWNED QTY */}
         {ownedQty > 0 && (

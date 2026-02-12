@@ -16,7 +16,9 @@ const DashboardHome = ({
   priceHistory,
   changeMap,
   momentumScore,
-  sectorStrength
+  sectorStrength,
+  tradeScore,
+  opportunityMap
 }) => {
   if (!wallet) return null;
 
@@ -55,7 +57,8 @@ const DashboardHome = ({
       <div className="card">
         <MarketOpportunities
           prices={marketData}
-          momentumScore={momentumScore}
+          changeMap={changeMap}
+          tradeScore={momentumScore}
           sectorStrength={sectorStrength}
         />
       </div>
@@ -75,6 +78,8 @@ const DashboardHome = ({
               onBuy={buyStock}
               onSell={sellStock}
               priceHistory={priceHistory}
+              tradeScore={tradeScore}
+              opportunityMap={opportunityMap}
             />
           </div>
         </div>
