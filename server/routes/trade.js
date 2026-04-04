@@ -4,13 +4,22 @@ const auth = require("../middleware/auth");
 const User = require("../models/User");
 const { getStockPrice } = require("../services/marketService");
 
-
 // ===================== BUY =====================
 router.post("/buy", auth, async (req, res) => {
   try {
-    const { symbol, quantity, orderType = "MARKET", limitPrice } = req.body;
-    
+    const {
+      symbol,
+      quantity,
+      orderType = "MARKET",
+      limitPrice,
+      stopLoss = null,
+      takeProfit = null
+    } = req.body;
 
+    // ✅ VALIDATION
+    if (!symbol || quantity <= 0) {
+      return res.status(400).json({ error: "Invalid input" });
+    }
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -18,24 +27,38 @@ router.post("/buy", auth, async (req, res) => {
     const stock = await getStockPrice(symbol);
     if (!stock) return res.status(404).json({ error: "Price unavailable" });
 
+    // ================= LIMIT ORDER =================
     if (orderType === "LIMIT") {
       if (!limitPrice) {
         return res.status(400).json({ error: "Limit price required" });
       }
 
       if (stock.price > limitPrice) {
+        // 🔥 SAVE PENDING ORDER
+        user.orders = user.orders || [];
+        user.orders.push({
+          symbol,
+          quantity,
+          type: "LIMIT",
+          limitPrice,
+          status: "PENDING"
+        });
+
+        await user.save();
+
         return res.json({
           message: "Order placed (waiting for price)",
           status: "PENDING"
         });
       }
     }
-    // if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
 
+    // ================= EXECUTE BUY =================
     const totalCost = stock.price * quantity;
 
-    if (user.balance < totalCost)
+    if (user.balance < totalCost) {
       return res.status(400).json({ error: "Insufficient balance" });
+    }
 
     user.balance -= totalCost;
 
@@ -43,12 +66,13 @@ router.post("/buy", auth, async (req, res) => {
 
     if (existing) {
       const totalQty = existing.quantity + quantity;
+
       existing.avgPrice =
         (existing.avgPrice * existing.quantity + stock.price * quantity) /
         totalQty;
+
       existing.quantity = totalQty;
 
-      // 🔥 Save risk controls
       if (stopLoss) existing.stopLoss = stopLoss;
       if (takeProfit) existing.takeProfit = takeProfit;
 
@@ -73,9 +97,9 @@ router.post("/buy", auth, async (req, res) => {
       date: new Date()
     });
 
-
     await user.save();
-    res.json({ message: "Stock bought with risk controls" });
+
+    res.json({ message: "Stock bought successfully" });
 
   } catch (err) {
     console.error("BUY ERROR:", err);
@@ -84,108 +108,57 @@ router.post("/buy", auth, async (req, res) => {
 });
 
 
-
-// ===================== MANUAL SELL =====================
+// ===================== SELL =====================
 router.post("/sell", auth, async (req, res) => {
   try {
-    const { symbol, quantity, notes, tags } = req.body;
+    const { symbol, quantity, notes = "", tags = [] } = req.body;
+
+    // ✅ VALIDATION
+    if (!symbol || quantity <= 0) {
+      return res.status(400).json({ error: "Invalid input" });
+    }
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const holding = user.holdings.find(h => h.symbol === symbol);
+
     if (!holding || holding.quantity < quantity) {
-      return res.status(400).json({ error: "Not enough shares to sell" });
+      return res.status(400).json({ error: "Not enough shares" });
     }
 
     const stock = await getStockPrice(symbol);
-    if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
+    if (!stock) return res.status(404).json({ error: "Price unavailable" });
 
     const sellPrice = stock.price;
-    const buyPrice = holding.avgPrice;
-    const proceeds = sellPrice * quantity;
-    const pl = (sellPrice - buyPrice) * quantity;
+    const pl = (sellPrice - holding.avgPrice) * quantity;
 
-    user.balance += proceeds;
+    user.balance += sellPrice * quantity;
     holding.quantity -= quantity;
 
     if (holding.quantity === 0) {
       user.holdings = user.holdings.filter(h => h.symbol !== symbol);
     }
 
-    // ⭐ SAVE NOTES + TAGS
     user.tradeHistory.push({
       type: "SELL",
       symbol,
       quantity,
       price: sellPrice,
       pl,
-      date: new Date(),
-      notes: notes || "",
-      tags: tags || []
-    });
-
-    await user.save();
-    res.json({ message: "Stock sold", pl });
-
-  } catch (err) {
-    console.error("SELL ERROR:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-
-// 🔥 AUTO SELL CHECKER
-// SELL STOCK
-router.post("/sell", auth, async (req, res) => {
-  try {
-    const { symbol, quantity, tags = [] } = req.body; // ⭐ RECEIVE TAGS
-
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    const holding = user.holdings.find(h => h.symbol === symbol);
-    if (!holding || holding.quantity < quantity) {
-      return res.status(400).json({ error: "Not enough shares to sell" });
-    }
-
-    const stock = await getStockPrice(symbol);
-    if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
-
-    const sellPrice = stock.price;
-    const buyPrice = holding.avgPrice;
-
-    const proceeds = sellPrice * quantity;
-    const pl = (sellPrice - buyPrice) * quantity;
-
-    user.balance += proceeds;
-
-    holding.quantity -= quantity;
-    if (holding.quantity === 0) {
-      user.holdings = user.holdings.filter(h => h.symbol !== symbol);
-    }
-
-    // ⭐ SAVE TAGS WITH TRADE
-    user.tradeHistory.push({
-      type: "SELL",
-      symbol,
-      quantity,
-      price: sellPrice,
-      pl,
-      tags,          // 🔥 STRATEGY TAGS SAVED
+      notes,
+      tags,
       date: new Date()
     });
 
     await user.save();
 
-    res.json({ message: "Stock sold", pl });
+    res.json({ message: "Stock sold successfully", pl });
 
   } catch (err) {
     console.error("SELL ERROR:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
 
 module.exports = router;
