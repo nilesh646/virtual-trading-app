@@ -1203,5 +1203,35 @@ router.get("/mistakes", auth, async (req, res) => {
   }
 });
 
+router.get("/recommendations", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    const recommendations = user.holdings.map(h => {
+      if (!h.stopLoss) {
+        return {
+          symbol: h.symbol,
+          advice: "⚠ Add Stop Loss"
+        };
+      }
+
+      if (!h.takeProfit) {
+        return {
+          symbol: h.symbol,
+          advice: "🎯 Add Take Profit"
+        };
+      }
+
+      return {
+        symbol: h.symbol,
+        advice: "✅ Good setup"
+      };
+    });
+
+    res.json(recommendations);
+  } catch (err) {
+    res.status(500).json({ error: "AI error" });
+  }
+});
 
 module.exports = router;
