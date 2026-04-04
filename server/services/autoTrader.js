@@ -5,10 +5,13 @@ const runAutoTrader = async () => {
   console.log("🤖 AutoTrader running...");
 
   try {
-    const users = await User.find({ "holdings.0": { $exists: true } });
+    const users = await User.find({});
 
+    // 🔥 LOOP THROUGH USERS (IMPORTANT)
     for (const user of users) {
-      for (const holding of user.holdings) {
+
+      // ================= AUTO SELL (SL / TP) =================
+      for (const holding of user.holdings || []) {
         const { symbol, quantity, avgPrice } = holding;
 
         const latestTrade = [...user.tradeHistory]
@@ -19,8 +22,6 @@ const runAutoTrader = async () => {
 
         const { stopLoss, takeProfit } = latestTrade;
 
-        if (!stopLoss && !takeProfit) continue;
-
         const stock = await getStockPrice(symbol);
         if (!stock) continue;
 
@@ -30,17 +31,15 @@ const runAutoTrader = async () => {
         let reason = "";
 
         if (stopLoss && currentPrice <= stopLoss) {
+          shouldSell = true;
           reason = "Stop Loss Hit";
         }
 
         if (takeProfit && currentPrice >= takeProfit) {
+          shouldSell = true;
           reason = "Take Profit Hit";
         }
 
-        if (currentPrice > avgPrice * 1.05) {
-          holding.stopLoss = currentPrice * 0.97;
-        }
-        
         if (!shouldSell) continue;
 
         const proceeds = currentPrice * quantity;
@@ -60,36 +59,50 @@ const runAutoTrader = async () => {
           date: new Date()
         });
 
-        console.log(`📉 Auto SOLD ${symbol} for user ${user._id} (${reason})`);
+        console.log(`📉 Auto SOLD ${symbol} (${reason})`);
       }
 
+      // ================= LIMIT ORDER EXECUTION =================
+      for (const order of user.orders || []) {
+        if (order.status !== "PENDING") continue;
+
+        const stock = await getStockPrice(order.symbol);
+        if (!stock) continue;
+
+        if (stock.price <= order.limitPrice) {
+          const totalCost = stock.price * order.quantity;
+
+          if (user.balance < totalCost) continue;
+
+          user.balance -= totalCost;
+
+          user.holdings.push({
+            symbol: order.symbol,
+            quantity: order.quantity,
+            avgPrice: stock.price
+          });
+
+          order.status = "EXECUTED";
+
+          user.tradeHistory.push({
+            type: "BUY",
+            symbol: order.symbol,
+            quantity: order.quantity,
+            price: stock.price,
+            date: new Date()
+          });
+
+          console.log(`✅ Limit BUY executed: ${order.symbol}`);
+        }
+      }
+
+      // 🔥 SAVE USER AFTER ALL OPERATIONS
       await user.save();
     }
 
-    for (const order of user.orders || []) {
-      if (order.status !== "PENDING") continue;
-
-      const stock = await getStockPrice(order.symbol);
-
-      if (stock.price <= order.limitPrice) {
-        // execute buy
-        user.balance -= stock.price * order.quantity;
-
-        user.holdings.push({
-          symbol: order.symbol,
-          quantity: order.quantity,
-          avgPrice: stock.price
-        });
-
-        order.status = "EXECUTED";
-
-        console.log("✅ Limit order executed:", order.symbol);
-      }
-    }
   } catch (err) {
     console.error("AutoTrader Error:", err.message);
   }
-
 };
 
 module.exports = { runAutoTrader };
