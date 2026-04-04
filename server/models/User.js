@@ -31,6 +31,15 @@ const userSchema = new mongoose.Schema({
       takeProfit: Number    // NEW
     }
   ],
+  orders: [
+    {
+      symbol: String,
+      quantity: Number,
+      type: String,
+      limitPrice: Number,
+      status: String
+    }
+  ],
   tradeHistory: [
   {
     type: {
@@ -52,7 +61,7 @@ const userSchema = new mongoose.Schema({
     notes: { type: String, default: "" },
     tags: { type: [String], default: [] },
 
-  }
+  } 
 ]
 });
 

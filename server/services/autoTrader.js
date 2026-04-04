@@ -30,15 +30,17 @@ const runAutoTrader = async () => {
         let reason = "";
 
         if (stopLoss && currentPrice <= stopLoss) {
-          shouldSell = true;
           reason = "Stop Loss Hit";
         }
 
         if (takeProfit && currentPrice >= takeProfit) {
-          shouldSell = true;
           reason = "Take Profit Hit";
         }
 
+        if (currentPrice > avgPrice * 1.05) {
+          holding.stopLoss = currentPrice * 0.97;
+        }
+        
         if (!shouldSell) continue;
 
         const proceeds = currentPrice * quantity;
@@ -64,9 +66,30 @@ const runAutoTrader = async () => {
       await user.save();
     }
 
+    for (const order of user.orders || []) {
+      if (order.status !== "PENDING") continue;
+
+      const stock = await getStockPrice(order.symbol);
+
+      if (stock.price <= order.limitPrice) {
+        // execute buy
+        user.balance -= stock.price * order.quantity;
+
+        user.holdings.push({
+          symbol: order.symbol,
+          quantity: order.quantity,
+          avgPrice: stock.price
+        });
+
+        order.status = "EXECUTED";
+
+        console.log("✅ Limit order executed:", order.symbol);
+      }
+    }
   } catch (err) {
     console.error("AutoTrader Error:", err.message);
   }
+
 };
 
 module.exports = { runAutoTrader };

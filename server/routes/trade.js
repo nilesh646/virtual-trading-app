@@ -8,14 +8,29 @@ const { getStockPrice } = require("../services/marketService");
 // ===================== BUY =====================
 router.post("/buy", auth, async (req, res) => {
   try {
-    const { symbol, quantity, stopLoss = null, takeProfit = null } = req.body;
+    const { symbol, quantity, orderType = "MARKET", limitPrice } = req.body;
+    
 
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const stock = await getStockPrice(symbol);
-    if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
+    if (!stock) return res.status(404).json({ error: "Price unavailable" });
+
+    if (orderType === "LIMIT") {
+      if (!limitPrice) {
+        return res.status(400).json({ error: "Limit price required" });
+      }
+
+      if (stock.price > limitPrice) {
+        return res.json({
+          message: "Order placed (waiting for price)",
+          status: "PENDING"
+        });
+      }
+    }
+    // if (!stock) return res.status(404).json({ error: "Stock price unavailable" });
 
     const totalCost = stock.price * quantity;
 
