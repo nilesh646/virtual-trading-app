@@ -1,16 +1,18 @@
-import EquityCurveChart from "../components/EquityCurveChart";
+// import EquityCurveChart from "../components/EquityCurveChart";
 import DailyPLChart from "../components/DailyPLChart";
 import DrawdownCard from "../components/DrawdownCard";
 import SharpeCard from "../components/SharpeCard";
 import SortinoCard from "../components/SortinoCard";
 import ProfitFactorCard from "../components/ProfitFactorCard";
 import ExpectancyCard from "../components/ExpectancyCard";
+import PortfolioChart from "../components/PortfolioChart";
 
 const AnalyticsPage = ({ equityCurve }) => {
   return (
     <>
       <div className="card">
-        <EquityCurveChart data={equityCurve} />
+        {/* <EquityCurveChart data={equityCurve} /> */}
+        <PortfolioChart data={equityCurve} />
       </div>
 
       <div className="card">

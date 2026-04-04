@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import api from "../api/axios";
-import Sparkline from "./Sparkline";
-import MarketAlerts from "./MarketAlerts";
+// import Sparkline from "./Sparkline";
+// import MarketAlerts from "./MarketAlerts";
+import PriceChart from "./PriceChart";
 
 const Market = ({
   prices = {},
@@ -29,17 +30,32 @@ const Market = ({
   };
 
   // ================= ENTRY TIMING (WEEK 16 DAY 2) =================
-  const getEntryTiming = (symbol, percent) => {
+  const getSignal = (symbol, percent) => {
     const score = tradeScore[symbol] || 50;
 
-    if (score >= 70 && percent < 1)
-      return { label: "Early Entry", color: "#00c853" };
+    if (score >= 75 && percent > 0.3) {
+      return { label: "🟢 Strong Buy", color: "#00c853" };
+    }
 
-    if (score >= 70 && percent >= 1)
-      return { label: "Extended", color: "#ffb300" };
+    if (score >= 60) {
+      return { label: "🟡 Watch", color: "#ffb300" };
+    }
 
-    if (score < 40)
-      return { label: "Late Entry", color: "#ff5252" };
+    if (score < 40) {
+      return { label: "🔴 Avoid", color: "#ff5252" };
+    }
+
+    return null;
+  };
+
+  const getRisk = (symbol, percent) => {
+    if (percent < -1) {
+      return { label: "⚠ High Risk", color: "#ff5252" };
+    }
+
+    if (Math.abs(percent) > 1.5) {
+      return { label: "⚡ Volatile", color: "#ffb300" };
+    }
 
     return null;
   };
@@ -153,7 +169,8 @@ const Market = ({
 
     const percent = changeMap[symbol] || 0;
     const isUp = percent >= 0;
-    const entry = getEntryTiming(symbol, percent);
+    const signal = getSignal(symbol, percent);
+    const risk = getRisk(symbol, percent);
     const opportunity = opportunityMap[symbol];
 
 
@@ -186,24 +203,18 @@ const Market = ({
         <strong>{symbol}</strong>
 
         {opportunity && (
-          <button
-            onClick={() => onBuy(symbol)}
+          <span
             style={{
               marginLeft: "8px",
-              padding: "2px 6px",
-              borderRadius: "4px",
               fontSize: "11px",
-              background:
+              color:
                 opportunity.confidence === "HIGH"
                   ? "#00c853"
-                  : opportunity.confidence === "MEDIUM"
-                  ? "#ffb300"
-                  : "#ff5252",
-              color: "white"
+                  : "#ffb300"
             }}
           >
-            AI {opportunity.confidence}
-          </button>
+            🔥 {opportunity.type.toUpperCase()}
+          </span>
         )}
 
         {/* PRICE */}
@@ -231,19 +242,34 @@ const Market = ({
           {isUp ? "↑" : "↓"} {percent.toFixed(2)}%
         </span>
 
-        {entry && (
+        <span style={{ marginLeft: "10px", fontSize: "12px" }}>
+          Score: {tradeScore[symbol] || 0}
+        </span>
+
+        {signal && (
           <span
             style={{
               marginLeft: "10px",
               fontSize: "12px",
               fontWeight: "bold",
-              color: entry.color
+              color: signal.color
             }}
           >
-            ● {entry.label}
+            {signal.label}
           </span>
         )}
 
+        {risk && (
+          <span
+            style={{
+              marginLeft: "10px",
+              fontSize: "12px",
+              color: risk.color
+            }}
+          >
+            {risk.label}
+          </span>
+        )}
 
         {/* OWNED QTY */}
         {ownedQty > 0 && (
@@ -254,7 +280,8 @@ const Market = ({
 
         {/* SPARKLINE */}
         <div style={{ marginTop: "4px" }}>
-          <Sparkline data={priceHistory[symbol] || []} />
+          {/* <Sparkline data={priceHistory[symbol] || []} /> */}
+          <PriceChart data={priceHistory[symbol] || []} />
         </div>
 
         <button disabled={!canBuy} onClick={() => onBuy(symbol)}>
@@ -281,12 +308,12 @@ const Market = ({
   return (
     <div>
 
-      <MarketAlerts
+      {/* <MarketAlerts
         prices={prices}
         changeMap={changeMap}
         momentumScore={{}}
         sectorStrength={[]}
-      />
+      /> */}
       
 
 

@@ -1,19 +1,22 @@
-import { Pie } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 
-const PortfolioChart = ({ holdings }) => {
-  if (!holdings || holdings.length === 0) return null;
+const PortfolioChart = ({ data = [] }) => {
+  if (!data.length) return <p>No portfolio data</p>;
+  
 
-  const data = {
-    labels: holdings.map(h => h.symbol),
+  const chartData = {
+    labels: data.map((_, i) => i),
+    pointRadius: data.map(d => d.equity > 100000 ? 4 : 2),
     datasets: [
       {
-        data: holdings.map(h => h.quantity * h.avgPrice),
-        backgroundColor: ["#4caf50", "#2196f3", "#ff9800", "#f44336"]
+        label: "Portfolio Value",
+        data: data.map(d => d.equity),
+        tension: 0.3,
       }
     ]
   };
 
-  return <Pie data={data} />;
+  return <Line data={chartData} />;
 };
 
 export default PortfolioChart;

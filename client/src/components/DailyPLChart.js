@@ -1,3 +1,4 @@
+import { Line } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
@@ -5,39 +6,24 @@ const DailyPLChart = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await api.get("/api/analytics/daily-pl");
-        setData(res.data || []);
-      } catch (err) {
-        console.error("Daily PL load failed", err);
-      }
-    };
-
-    load();
+    api.get("/api/analytics/daily-pl")
+      .then(res => setData(res.data));
   }, []);
 
-  if (!data.length) return <p>No completed trades yet</p>;
+  if (!data.length) return <p>Loading P/L...</p>;
 
-  return (
-    <div>
-      <h3>Daily Performance</h3>
+  const chartData = {
+    labels: data.map(d => d.date),
+    datasets: [
+      {
+        label: "Daily P/L",
+        data: data.map(d => d.pl),
+        tension: 0.3,
+      }
+    ]
+  };
 
-      {data.map(day => (
-        <div key={day.date} style={{ marginBottom: "6px" }}>
-          <strong>{day.date}</strong>{" "}
-          <span
-            style={{
-              color: day.pl >= 0 ? "#00c853" : "#ff5252",
-              fontWeight: "bold"
-            }}
-          >
-            ₹{day.pl.toFixed(2)}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+  return <Line data={chartData} />;
 };
 
 export default DailyPLChart;

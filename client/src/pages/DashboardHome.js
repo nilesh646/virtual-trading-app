@@ -4,6 +4,7 @@ import MarketMovers from "../components/MarketMovers";
 import MarketHeatmap from "../components/MarketHeatmap";
 import MarketAlerts from "../components/MarketAlerts";
 import MarketOpportunities from "../components/MarketOpportunities";
+import AIRecommendations from "../components/AIRecommendations";
 
 const DashboardHome = ({
   wallet,
@@ -22,6 +23,13 @@ const DashboardHome = ({
 }) => {
   if (!wallet) return null;
 
+  // 🧠 AI SUMMARY (NEW)
+  const topSector = Object.entries(sectorStrength)
+    .sort((a, b) => b[1] - a[1])[0];
+
+  const topStock = Object.entries(momentumScore)
+    .sort((a, b) => b[1] - a[1])[0];
+
   return (
     <>
       {/* ================= ACCOUNT ================= */}
@@ -30,7 +38,14 @@ const DashboardHome = ({
         <p>₹{wallet.balance.toFixed(2)}</p>
       </div>
 
-      {/* ================= MARKET ALERTS ================= */}
+      {/* ================= AI SUMMARY (NEW) ================= */}
+      <div className="card">
+        <h3>🧠 AI Market Summary</h3>
+        <p>🔥 Strongest Sector: {topSector?.[0]}</p>
+        <p>🚀 Top Momentum Stock: {topStock?.[0]}</p>
+      </div>
+
+      {/* ================= ALERTS ================= */}
       <div className="card">
         <MarketAlerts
           prices={marketData}
@@ -40,17 +55,22 @@ const DashboardHome = ({
         />
       </div>
 
-      {/* ================= MARKET MOVERS ================= */}
       <div className="card">
-        <MarketMovers prices={marketData} />
+        <AIRecommendations />
       </div>
 
-      {/* ================= HEATMAP ================= */}
-      <div className="card">
-        <MarketHeatmap
-          prices={marketData}
-          onBuy={buyStock}
-        />
+      {/* ================= MARKET SECTION ================= */}
+      <div className="grid-2">
+        <div className="card">
+          <MarketMovers prices={marketData} />
+        </div>
+
+        <div className="card">
+          <MarketHeatmap
+            prices={marketData}
+            onBuy={buyStock}
+          />
+        </div>
       </div>
 
       {/* ================= OPPORTUNITIES ================= */}
@@ -58,15 +78,16 @@ const DashboardHome = ({
         <MarketOpportunities
           prices={marketData}
           changeMap={changeMap}
-          tradeScore={momentumScore}
+          tradeScore={tradeScore}   // ✅ FIXED
           sectorStrength={sectorStrength}
+          opportunityMap={opportunityMap}
         />
       </div>
 
       {/* ================= TRADING AREA ================= */}
       <div className="trading-layout">
 
-        {/* LEFT SIDE — MARKET */}
+        {/* LEFT — MARKET */}
         <div className="market-panel">
           <div className="card">
             <Market
@@ -84,7 +105,7 @@ const DashboardHome = ({
           </div>
         </div>
 
-        {/* RIGHT SIDE — TRADE PANEL */}
+        {/* RIGHT — TRADE */}
         <div className="trade-panel">
           <div className="card">
             <Trade refreshWallet={refreshWallet} />

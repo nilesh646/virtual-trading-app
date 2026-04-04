@@ -1,31 +1,27 @@
 import { Line } from "react-chartjs-2";
 
-const PriceChart = ({ prices }) => {
-  if (!prices || Object.keys(prices).length === 0) {
-    return <p>Loading chart data...</p>;
-  }
+const PriceChart = ({ data = [] }) => {
+  if (!data.length) return <p>No chart data</p>;
 
-  const labels = Object.keys(prices);
-  const dataValues = Object.values(prices);
-
-  const data = {
-    labels,
+  const chartData = {
+    labels: data.map((_, i) => i),
     datasets: [
       {
-        label: "Live Prices",
-        data: dataValues,
-        borderColor: "blue",
-        backgroundColor: "rgba(0, 0, 255, 0.1)"
+        label: "Price",
+        data: data,
+        tension: 0.3,
       }
     ]
   };
 
-  return (
-    <div>
-      <h3>Market Prices</h3>
-      <Line data={data} />
-    </div>
-  );
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { display: false }
+    }
+  };
+
+  return <Line data={chartData} options={options} />;
 };
 
 export default PriceChart;
