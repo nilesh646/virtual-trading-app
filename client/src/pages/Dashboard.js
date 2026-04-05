@@ -342,9 +342,14 @@ const Dashboard = () => {
             }
           />
 
-          <div className="card">
-            <BehaviorInsights />
-          </div>
+          <Route
+            path="behavior"
+            element={
+              <div className="card">
+                <BehaviorInsights />
+              </div>
+            }
+          />
 
           <Route
             path="analytics"
