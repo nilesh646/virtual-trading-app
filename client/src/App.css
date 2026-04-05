@@ -195,3 +195,13 @@ input, select, textarea {
   color: #2563eb;
 }
 
+.price-up {
+  color: #00c853;
+  transition: 0.3s;
+}
+
+.price-down {
+  color: #ff5252;
+  transition: 0.3s;
+}
+

@@ -189,10 +189,19 @@ const Market = ({
         )}
 
         {/* PRICE */}
-        <span style={{ marginLeft: "6px" }}>
+        <span
+          className={
+            flashMap[symbol] === "up"
+              ? "price-up"
+              : flashMap[symbol] === "down"
+              ? "price-down"
+              : ""
+          }
+          style={{ marginLeft: "6px" }}
+        >
           ₹{price.toFixed(2)}
         </span>
-
+        
         {/* CHANGE */}
         <span
           style={{
