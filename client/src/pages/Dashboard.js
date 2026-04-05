@@ -21,6 +21,7 @@ import StrategyPage from "./StrategyPage";
 import AIPage from "./AIPage";
 
 import { SECTOR_MAP } from "../data/sectors";
+import BehaviorInsights from "../components/BehaviorInsights";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -340,6 +341,10 @@ const Dashboard = () => {
               />
             }
           />
+
+          <div className="card">
+            <BehaviorInsights />
+          </div>
 
           <Route
             path="analytics"
