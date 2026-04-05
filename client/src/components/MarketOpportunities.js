@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { SECTOR_MAP } from "../data/sectors";
-
+import COLORS from "../styles/colors";
 
 const MarketOpportunities = ({
   prices = {},
@@ -23,14 +23,13 @@ const MarketOpportunities = ({
           ? sectorStrength[sector] || 0
           : 0;
 
-
-      /* ================= SCORE ================= */
+      // ================= SCORE =================
       const finalScore =
         momentum * 0.5 +
         Math.abs(change) * 15 +
         sectorValue * 20;
 
-      /* ================= REASONS ================= */
+      // ================= REASONS =================
       const reasons = [];
 
       if (change > 1) reasons.push("🔥 Breakout Move");
@@ -39,7 +38,7 @@ const MarketOpportunities = ({
       if (change > 0.3 && change < 1)
         reasons.push("📈 Early Momentum");
 
-      /* ================= CONFIDENCE ENGINE ================= */
+      // ================= CONFIDENCE =================
       let confidenceScore = 0;
 
       if (momentum > 70) confidenceScore += 40;
@@ -47,14 +46,14 @@ const MarketOpportunities = ({
       if (change > 0.7) confidenceScore += 30;
 
       let confidenceLabel = "LOW";
-      let confidenceColor = "#ff5252";
+      let confidenceColor = COLORS.red;
 
       if (confidenceScore >= 70) {
         confidenceLabel = "HIGH";
-        confidenceColor = "#00c853";
+        confidenceColor = COLORS.green;
       } else if (confidenceScore >= 40) {
         confidenceLabel = "MEDIUM";
-        confidenceColor = "#ffb300";
+        confidenceColor = COLORS.yellow;
       }
 
       if (finalScore > 40) {
@@ -63,7 +62,6 @@ const MarketOpportunities = ({
           score: Math.round(finalScore),
           change,
           reasons,
-          confidenceScore,
           confidenceLabel,
           confidenceColor
         });
@@ -93,34 +91,21 @@ const MarketOpportunities = ({
         >
           <strong>{stock.symbol}</strong>
 
-          <span
-            style={{
-              marginLeft: "10px",
-              color: "#60a5fa",
-              fontWeight: "bold"
-            }}
-          >
+          {/* 📊 SCORE */}
+          <span className="badge badge-blue">
             Score: {stock.score}
           </span>
 
-          {top.map(([symbol, score]) => (
-            <div key={symbol}>
-              <strong>{symbol}</strong>
+          {/* 🔥 HIGH TAG */}
+          {stock.score > 75 && (
+            <span className="badge badge-green">🔥 HIGH</span>
+          )}
 
-              <span className="badge badge-blue">
-                Score: {score}
-              </span>
-
-              {score > 75 && (
-                <span className="badge badge-green">🔥 HIGH</span>
-              )}
-            </div>
-          ))}
-
+          {/* 📈 CHANGE */}
           <span
             style={{
               marginLeft: "10px",
-              color: stock.change >= 0 ? "#00c853" : "#ff5252"
+              color: stock.change >= 0 ? COLORS.green : COLORS.red
             }}
           >
             {stock.change >= 0 ? "↑" : "↓"}{" "}
@@ -135,7 +120,7 @@ const MarketOpportunities = ({
               color: stock.confidenceColor
             }}
           >
-            Confidence: {stock.confidenceLabel}
+            {stock.confidenceLabel}
           </span>
 
           {/* ✅ REASONS */}
