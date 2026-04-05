@@ -28,15 +28,15 @@ const Trade = ({ refreshWallet }) => {
         limitPrice: orderType === "LIMIT" ? Number(limitPrice) : null
       });
 
-      await api.post("/api/trade/sell", {
-        symbol,
-        quantity,
-        notes: noteInputs[symbol],
-        tags: tagInputs[symbol]?.split(",") || [],
-        emotion: emotionInputs[symbol],
-        rating: Number(ratingInputs[symbol]) || 0
-      });
-      
+      // await api.post("/api/trade/sell", {
+      //   symbol,
+      //   quantity,
+      //   notes: noteInputs[symbol],
+      //   tags: tagInputs[symbol]?.split(",") || [],
+      //   emotion: emotionInputs[symbol],
+      //   rating: Number(ratingInputs[symbol]) || 0
+      // });
+
       refreshWallet();
 
     } catch (err) {
