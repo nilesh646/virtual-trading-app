@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import COLORS from "../styles/colors";
 
 const TradeDurationCard = () => {
   const [data, setData] = useState(null);
@@ -22,7 +23,7 @@ const TradeDurationCard = () => {
   return (
     <div className="card">
       <h3>Trade Duration</h3>
-      <p style={{ color: "#00c853" }}>
+      <p style={{ color: COLORS.green}}>
         Avg Win Duration: <b>{data.avgWinMinutes} min</b>
       </p>
       <p style={{ color: "#ff5252" }}>

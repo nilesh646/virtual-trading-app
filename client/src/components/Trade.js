@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../api/axios";
+import COLORS from "../styles/colors";
 
 const Trade = ({ refreshWallet }) => {
 
@@ -78,6 +79,19 @@ const Trade = ({ refreshWallet }) => {
       )}
 
       <button onClick={handleBuy}>Buy</button>
+
+      <button
+        style={{
+          background: COLORS.blue,
+          color: "#fff",
+          border: "none",
+          padding: "8px 12px",
+          borderRadius: "6px"
+        }}
+      >
+        Buy
+      </button>
+
     </div>
   );
 };

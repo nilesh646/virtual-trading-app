@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import COLORS from "../styles/colors";
 
 const TradeLeaders = () => {
   const [leaders, setLeaders] = useState(null);
@@ -15,7 +16,7 @@ const TradeLeaders = () => {
       <h3>🏆 Trade Performance</h3>
 
       {leaders.best && (
-        <div style={{ color: "#00c853" }}>
+        <div style={{ color: COLORS.green}}>
           Best: {leaders.best.symbol} ₹{leaders.best.pl.toFixed(2)}
         </div>
       )}

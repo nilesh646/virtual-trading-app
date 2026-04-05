@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import COLORS from "../styles/colors";
 
 const MarketMovers = ({ prices = {} }) => {
 
@@ -24,34 +25,52 @@ const MarketMovers = ({ prices = {} }) => {
 
   return (
     <div>
-      <h3>Market Movers</h3>
+      <h3>📊 Market Movers</h3>
 
       <div style={{ display: "flex", gap: "40px" }}>
-        {/* Gainers */}
+        
+        {/* 🔥 Gainers */}
         <div>
-          <h4 style={{ color: "#00c853" }}>🔥 Top Gainers</h4>
+          <h4 style={{ color: COLORS.green }}>🔥 Top Gainers</h4>
+
           {movers.gainers.map((s) => (
             <div key={s.symbol}>
-              {s.symbol}{" "}
-              <span style={{ color: "#00c853" }}>
+              <strong>{s.symbol}</strong>
+
+              <span
+                style={{
+                  marginLeft: "8px",
+                  color: COLORS.green,
+                  fontWeight: "bold"
+                }}
+              >
                 +{s.change.toFixed(2)}%
               </span>
             </div>
           ))}
         </div>
 
-        {/* Losers */}
+        {/* 🔻 Losers */}
         <div>
-          <h4 style={{ color: "#ff5252" }}>🔻 Top Losers</h4>
+          <h4 style={{ color: COLORS.red }}>🔻 Top Losers</h4>
+
           {movers.losers.map((s) => (
             <div key={s.symbol}>
-              {s.symbol}{" "}
-              <span style={{ color: "#ff5252" }}>
+              <strong>{s.symbol}</strong>
+
+              <span
+                style={{
+                  marginLeft: "8px",
+                  color: COLORS.red,
+                  fontWeight: "bold"
+                }}
+              >
                 {s.change.toFixed(2)}%
               </span>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );

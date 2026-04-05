@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
 import Sparkline from "./Sparkline";
+import COLORS from "../styles/colors";
 
 const Portfolio = ({
   holdings = [],
@@ -107,7 +108,7 @@ const Portfolio = ({
           {/* 📊 P/L */}
           <span
             style={{
-              color: h.pl >= 0 ? "#00c853" : "#ff5252",
+              color: h.pl >= 0 ? COLORS.green : COLORS.red,
               fontWeight: "bold",
             }}
           >
@@ -122,7 +123,7 @@ const Portfolio = ({
               SL: ₹{h.stopLoss.toFixed(2)}
             </span>{" "}
             |{" "}
-            <span style={{ color: "#00c853" }}>
+            <span style={{ color: COLORS.green }}>
               TP: ₹{h.takeProfit.toFixed(2)}
             </span>
           </div>

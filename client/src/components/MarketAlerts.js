@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { SECTOR_MAP } from "../data/sectors";
+import COLORS from "../styles/colors";
 
 const MarketAlerts = ({
   prices = {},
@@ -24,7 +25,7 @@ const MarketAlerts = ({
         list.push({
           priority: 1,
           text: `🔥 ${symbol} strong breakout (Momentum ${momentum})`,
-          color: "#00c853"
+          color: COLORS.green
         });
       }
 

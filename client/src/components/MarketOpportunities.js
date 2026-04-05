@@ -103,6 +103,20 @@ const MarketOpportunities = ({
             Score: {stock.score}
           </span>
 
+          {top.map(([symbol, score]) => (
+            <div key={symbol}>
+              <strong>{symbol}</strong>
+
+              <span className="badge badge-blue">
+                Score: {score}
+              </span>
+
+              {score > 75 && (
+                <span className="badge badge-green">🔥 HIGH</span>
+              )}
+            </div>
+          ))}
+
           <span
             style={{
               marginLeft: "10px",

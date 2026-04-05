@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import COLORS from "../styles/colors";
 
 const Analytics = () => {
   const [data, setData] = useState(null);
@@ -37,7 +38,7 @@ const Analytics = () => {
       <h3>Performance & Risk Analytics</h3>
 
       <p>Total Trades: <strong>{data.totalTrades}</strong></p>
-      <p>Wins: <strong style={{ color: "#00c853" }}>{data.wins}</strong></p>
+      <p>Wins: <strong style={{ color: COLORS.green}}>{data.wins}</strong></p>
       <p>Losses: <strong style={{ color: "#ff5252" }}>{data.losses}</strong></p>
       <p>Win Rate: <strong>{data.winRate}%</strong></p>
 

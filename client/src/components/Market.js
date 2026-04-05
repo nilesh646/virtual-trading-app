@@ -3,6 +3,7 @@ import api from "../api/axios";
 // import Sparkline from "./Sparkline";
 // import MarketAlerts from "./MarketAlerts";
 import PriceChart from "./PriceChart";
+import COLORS from "../styles/colors";
 
 const Market = ({
   prices = {},
@@ -34,7 +35,7 @@ const Market = ({
     const score = tradeScore[symbol] || 50;
 
     if (score >= 75 && percent > 0.3) {
-      return { label: "🟢 Strong Buy", color: "#00c853" };
+      return { label: "🟢 Strong Buy", color: COLORS.green};
     }
 
     if (score >= 60) {
@@ -170,8 +171,15 @@ const Market = ({
     const percent = changeMap[symbol] || 0;
     const isUp = percent >= 0;
     const signal = getSignal(symbol, percent);
-    const risk = getRisk(symbol, percent);
+    // const risk = getRisk(symbol, percent);
     const opportunity = opportunityMap[symbol];
+
+    const risk =
+      percent < -1
+        ? "HIGH RISK"
+        : Math.abs(percent) > 1.5
+        ? "VOLATILE"
+        : null;
 
 
     const strongMove = Math.abs(percent) > 0.8;
@@ -202,18 +210,29 @@ const Market = ({
 
         <strong>{symbol}</strong>
 
+        <span className="badge badge-blue">
+          Score: {tradeScore[symbol] || 0}
+        </span>
+
         {opportunity && (
           <span
-            style={{
-              marginLeft: "8px",
-              fontSize: "11px",
-              color:
-                opportunity.confidence === "HIGH"
-                  ? "#00c853"
-                  : "#ffb300"
-            }}
+            className={`badge ${
+              opportunity.confidence === "HIGH"
+                ? "badge-green"
+                : "badge-yellow"
+            }`}
           >
             🔥 {opportunity.type.toUpperCase()}
+          </span>
+        )}
+
+        {risk && (
+          <span
+            className={`badge ${
+              risk === "HIGH RISK" ? "badge-red" : "badge-yellow"
+            }`}
+          >
+            ⚠ {risk}
           </span>
         )}
 
@@ -248,12 +267,13 @@ const Market = ({
 
         {signal && (
           <span
-            style={{
-              marginLeft: "10px",
-              fontSize: "12px",
-              fontWeight: "bold",
-              color: signal.color
-            }}
+            className={`badge ${
+              signal.label.includes("Strong")
+                ? "badge-green"
+                : signal.label.includes("Watch")
+                ? "badge-yellow"
+                : "badge-red"
+            }`}
           >
             {signal.label}
           </span>
