@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import api from "../api/axios";
-// import Sparkline from "./Sparkline";
-// import MarketAlerts from "./MarketAlerts";
 import PriceChart from "./PriceChart";
 import COLORS from "../styles/colors";
 
@@ -24,43 +22,37 @@ const Market = ({
   const [search, setSearch] = useState("");
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
 
-  /* ================= HOLDING QTY ================= */
   const getHoldingQty = (symbol) => {
     const h = holdings.find(x => x.symbol === symbol);
     return h ? h.quantity : 0;
   };
 
-  // ================= ENTRY TIMING (WEEK 16 DAY 2) =================
+  /* ================= SIGNAL ================= */
   const getSignal = (symbol, percent) => {
     const score = tradeScore[symbol] || 50;
 
-    if (score >= 75 && percent > 0.3) {
-      return { label: "🟢 Strong Buy", color: COLORS.green};
-    }
+    if (score >= 75 && percent > 0.3)
+      return { label: "🟢 Strong Buy", color: COLORS.green };
 
-    if (score >= 60) {
-      return { label: "🟡 Watch", color: "#ffb300" };
-    }
+    if (score >= 60)
+      return { label: "🟡 Watch", color: COLORS.yellow };
 
-    if (score < 40) {
-      return { label: "🔴 Avoid", color: "#ff5252" };
-    }
+    if (score < 40)
+      return { label: "🔴 Avoid", color: COLORS.red };
 
     return null;
   };
 
-  const getRisk = (symbol, percent) => {
-    if (percent < -1) {
-      return { label: "⚠ High Risk", color: "#ff5252" };
-    }
+  /* ================= RISK (FIXED & USED) ================= */
+  const getRisk = (percent) => {
+    if (percent < -1)
+      return { label: "⚠ HIGH RISK", color: COLORS.red };
 
-    if (Math.abs(percent) > 1.5) {
-      return { label: "⚡ Volatile", color: "#ffb300" };
-    }
+    if (Math.abs(percent) > 1.5)
+      return { label: "⚡ VOLATILE", color: COLORS.yellow };
 
     return null;
   };
-
 
   /* ================= PRICE MOVEMENT ================= */
   useEffect(() => {
@@ -104,18 +96,16 @@ const Market = ({
     }
   };
 
-  /* ================= SORT + FILTER ================= */
+  /* ================= SORT ================= */
   const sortedMarket = useMemo(() => {
     let entries = Object.entries(prices);
 
-    // SEARCH FILTER
     if (search.trim()) {
       entries = entries.filter(([symbol]) =>
         symbol.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    // WATCHLIST FILTER
     if (showWatchlistOnly) {
       entries = entries.filter(([symbol]) =>
         watchlist.includes(symbol)
@@ -126,33 +116,15 @@ const Market = ({
       const aiA = opportunityMap[a[0]];
       const aiB = opportunityMap[b[0]];
 
-      // ✅ AI HIGH FIRST
-      if (aiA?.confidence === "HIGH" && aiB?.confidence !== "HIGH")
-        return -1;
-      if (aiB?.confidence === "HIGH" && aiA?.confidence !== "HIGH")
-        return 1;
+      if (aiA?.confidence === "HIGH" && aiB?.confidence !== "HIGH") return -1;
+      if (aiB?.confidence === "HIGH" && aiA?.confidence !== "HIGH") return 1;
 
-      // ✅ AI MEDIUM NEXT
-      if (aiA?.confidence === "MEDIUM" && !aiB)
-        return -1;
-      if (aiB?.confidence === "MEDIUM" && !aiA)
-        return 1;
-
-      // ✅ WATCHLIST PRIORITY
-      const watchA = watchlist.includes(a[0]);
-      const watchB = watchlist.includes(b[0]);
-
-      if (watchA && !watchB) return -1;
-      if (watchB && !watchA) return 1;
-
-      // ✅ NORMAL SORT BY MOVEMENT
       const changeA = Math.abs(changeMap[a[0]] || 0);
       const changeB = Math.abs(changeMap[b[0]] || 0);
 
       return changeB - changeA;
     });
   }, [prices, changeMap, search, showWatchlistOnly, watchlist, opportunityMap]);
-
 
   const watchlistMarket = sortedMarket.filter(([s]) =>
     watchlist.includes(s)
@@ -170,37 +142,20 @@ const Market = ({
 
     const percent = changeMap[symbol] || 0;
     const isUp = percent >= 0;
+
     const signal = getSignal(symbol, percent);
-    // const risk = getRisk(symbol, percent);
+    const risk = getRisk(percent);
     const opportunity = opportunityMap[symbol];
-
-    const risk =
-      percent < -1
-        ? "HIGH RISK"
-        : Math.abs(percent) > 1.5
-        ? "VOLATILE"
-        : null;
-
-
-    const strongMove = Math.abs(percent) > 0.8;
 
     return (
       <div
         key={symbol}
         style={{
           padding: "8px 0",
-          borderBottom: "1px solid #1f2937",
-          background: opportunity
-            ? "rgba(255,215,0,0.08)"
-            : strongMove
-            ? percent > 0
-              ? "rgba(0,200,83,0.08)"
-              : "rgba(255,82,82,0.08)"
-            : "transparent",
-          borderLeft: opportunity ? "3px solid gold" : "none"
+          borderBottom: "1px solid #1f2937"
         }}
       >
-        {/* Watchlist Star */}
+        {/* ⭐ WATCHLIST */}
         <span
           style={{ cursor: "pointer", marginRight: "6px" }}
           onClick={() => toggleWatchlist(symbol)}
@@ -210,43 +165,31 @@ const Market = ({
 
         <strong>{symbol}</strong>
 
+        {/* SCORE */}
         <span className="badge badge-blue">
           Score: {tradeScore[symbol] || 0}
         </span>
 
+        {/* OPPORTUNITY */}
         {opportunity && (
-          <span
-            className={`badge ${
-              opportunity.confidence === "HIGH"
-                ? "badge-green"
-                : "badge-yellow"
-            }`}
-          >
-            🔥 {opportunity.type.toUpperCase()}
+          <span className="badge badge-green">
+            🔥 {opportunity.type?.toUpperCase()}
           </span>
         )}
 
+        {/* RISK */}
         {risk && (
           <span
             className={`badge ${
-              risk === "HIGH RISK" ? "badge-red" : "badge-yellow"
+              risk.label.includes("HIGH") ? "badge-red" : "badge-yellow"
             }`}
           >
-            ⚠ {risk}
+            {risk.label}
           </span>
         )}
 
         {/* PRICE */}
-        <span
-          className={
-            flashMap[symbol] === "up"
-              ? "price-up"
-              : flashMap[symbol] === "down"
-              ? "price-down"
-              : ""
-          }
-          style={{ marginLeft: "6px" }}
-        >
+        <span style={{ marginLeft: "6px" }}>
           ₹{price.toFixed(2)}
         </span>
 
@@ -254,17 +197,14 @@ const Market = ({
         <span
           style={{
             marginLeft: "10px",
-            color: isUp ? "#00c853" : "#ff5252",
+            color: isUp ? COLORS.green : COLORS.red,
             fontWeight: "bold"
           }}
         >
           {isUp ? "↑" : "↓"} {percent.toFixed(2)}%
         </span>
 
-        <span style={{ marginLeft: "10px", fontSize: "12px" }}>
-          Score: {tradeScore[symbol] || 0}
-        </span>
-
+        {/* SIGNAL */}
         {signal && (
           <span
             className={`badge ${
@@ -279,31 +219,19 @@ const Market = ({
           </span>
         )}
 
-        {risk && (
-          <span
-            style={{
-              marginLeft: "10px",
-              fontSize: "12px",
-              color: risk.color
-            }}
-          >
-            {risk.label}
-          </span>
-        )}
-
-        {/* OWNED QTY */}
+        {/* HOLDINGS */}
         {ownedQty > 0 && (
           <span style={{ marginLeft: "10px", color: "#60a5fa" }}>
             Qty: {ownedQty}
           </span>
         )}
 
-        {/* SPARKLINE */}
+        {/* CHART */}
         <div style={{ marginTop: "4px" }}>
-          {/* <Sparkline data={priceHistory[symbol] || []} /> */}
           <PriceChart data={priceHistory[symbol] || []} />
         </div>
 
+        {/* BUTTONS */}
         <button disabled={!canBuy} onClick={() => onBuy(symbol)}>
           Buy 1
         </button>
@@ -319,24 +247,12 @@ const Market = ({
     );
   };
 
-  /* ================= GUARD ================= */
   if (!prices || Object.keys(prices).length === 0) {
     return <p>Loading market data...</p>;
   }
 
-  /* ================= UI ================= */
   return (
     <div>
-
-      {/* <MarketAlerts
-        prices={prices}
-        changeMap={changeMap}
-        momentumScore={{}}
-        sectorStrength={[]}
-      /> */}
-      
-
-
       <h3>Market</h3>
 
       <div style={{ marginBottom: "10px" }}>
@@ -344,7 +260,6 @@ const Market = ({
           placeholder="Search symbol..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{ marginRight: "10px" }}
         />
 
         <button onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}>
@@ -354,12 +269,12 @@ const Market = ({
 
       {watchlistMarket.length > 0 && (
         <>
-          <h4 style={{ color: "#60a5fa" }}>⭐ Watchlist</h4>
+          <h4>⭐ Watchlist</h4>
           {watchlistMarket.map(renderRow)}
         </>
       )}
 
-      <h4 style={{ color: "#facc15" }}>🔥 Market Movers</h4>
+      <h4>🔥 Market Movers</h4>
       {normalMarket.map(renderRow)}
     </div>
   );
