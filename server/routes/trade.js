@@ -111,7 +111,7 @@ router.post("/buy", auth, async (req, res) => {
 // ===================== SELL =====================
 router.post("/sell", auth, async (req, res) => {
   try {
-    const { symbol, quantity, notes = "", tags = [] } = req.body;
+    const { symbol, quantity, notes, tags, emotion, rating } = req.body;
 
     // ✅ VALIDATION
     if (!symbol || quantity <= 0) {
@@ -148,6 +148,8 @@ router.post("/sell", auth, async (req, res) => {
       pl,
       notes,
       tags,
+      emotion,
+      rating,
       date: new Date()
     });
 

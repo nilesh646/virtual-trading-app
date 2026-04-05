@@ -41,28 +41,22 @@ const userSchema = new mongoose.Schema({
     }
   ],
   tradeHistory: [
-  {
-    type: {
-      type: String, // BUY or SELL
-      required: true
-    },
-    symbol: String,
-    quantity: Number,
-    price: Number,
-    pl: {
-      type: Number,
-      default: 0
-    },
-    date: {
-      type: Date,
-      default: Date.now
-    },
-    
-    notes: { type: String, default: "" },
-    tags: { type: [String], default: [] },
+    {
+      type: { type: String },
+      symbol: String,
+      quantity: Number,
+      price: Number,
+      pl: Number,
+      date: Date,
 
-  } 
-]
+      notes: { type: String, default: "" },
+      tags: { type: [String], default: [] },
+
+      // 🔥 NEW
+      emotion: { type: String, default: "" },
+      rating: { type: Number, default: 0 }
+    }
+  ]
 });
 
 module.exports = mongoose.model("User", userSchema);

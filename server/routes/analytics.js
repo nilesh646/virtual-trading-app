@@ -1234,4 +1234,31 @@ router.get("/recommendations", auth, async (req, res) => {
   }
 });
 
+router.get("/behavior", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    const trades = user.tradeHistory || [];
+
+    const avgRating =
+      trades.reduce((sum, t) => sum + (t.rating || 0), 0) /
+      (trades.length || 1);
+
+    const emotionCount = {};
+
+    trades.forEach(t => {
+      if (!t.emotion) return;
+      emotionCount[t.emotion] = (emotionCount[t.emotion] || 0) + 1;
+    });
+
+    res.json({
+      avgRating: avgRating.toFixed(2),
+      emotions: emotionCount
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Behavior analysis failed" });
+  }
+});
+
 module.exports = router;
