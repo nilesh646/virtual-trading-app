@@ -290,7 +290,13 @@ const Dashboard = () => {
     loadWatchlist
   ]);
 
-  if (!wallet && token) return <p>Loading wallet...</p>;
+  if (!wallet) {
+    return (
+      <div style={{ padding: "20px" }}>
+        <h3>Loading dashboard...</h3>
+      </div>
+    );
+  }
 
   /* =====================================================
      UI

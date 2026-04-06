@@ -3,38 +3,47 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-
-
 const AuthPage = ({ setUser }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgot, setIsForgot] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
+      /* ================= FORGOT PASSWORD ================= */
       if (isForgot) {
         await api.post("/api/auth/forgot-password", { email });
         toast.success("Reset link sent to email");
         return;
       }
 
+      /* ================= LOGIN ================= */
       if (isLogin) {
         const res = await api.post("/api/auth/login", {
           email,
           password
         });
 
+        // ✅ store token
         localStorage.setItem("token", res.data.token);
+
+        // ✅ set user
         setUser(res.data.user);
+
         toast.success("Login successful");
 
-        // 🔥 REDIRECT
-        navigate("/dashboard");
-      } else {
+        // 🔥 FIX: delay navigation slightly (ensures state update)
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 100);
+      }
+
+      /* ================= REGISTER ================= */
+      else {
         await api.post("/api/auth/register", {
           email,
           password
@@ -43,12 +52,12 @@ const AuthPage = ({ setUser }) => {
         toast.success("Account created! Please login.");
         setIsLogin(true);
       }
+
     } catch (err) {
+      console.error(err);
       toast.error(err.response?.data?.error || "Something went wrong");
     }
   };
-
-  
 
   return (
     <div className="auth-container">
@@ -62,6 +71,7 @@ const AuthPage = ({ setUser }) => {
             : "Create Account"}
         </h2>
 
+        {/* EMAIL */}
         <input
           type="email"
           placeholder="Email"
@@ -69,6 +79,7 @@ const AuthPage = ({ setUser }) => {
           onChange={(e) => setEmail(e.target.value)}
         />
 
+        {/* PASSWORD */}
         {!isForgot && (
           <input
             type="password"
@@ -78,6 +89,7 @@ const AuthPage = ({ setUser }) => {
           />
         )}
 
+        {/* BUTTON */}
         <button onClick={handleSubmit}>
           {isForgot
             ? "Send Reset Link"
@@ -86,7 +98,7 @@ const AuthPage = ({ setUser }) => {
             : "Register"}
         </button>
 
-        {/* 🔁 SWITCH LOGIN / REGISTER */}
+        {/* SWITCH LOGIN / REGISTER */}
         {!isForgot && (
           <p className="auth-switch">
             {isLogin
@@ -99,7 +111,7 @@ const AuthPage = ({ setUser }) => {
           </p>
         )}
 
-        {/* 🔐 FORGOT PASSWORD */}
+        {/* FORGOT PASSWORD */}
         {isLogin && !isForgot && (
           <p
             className="auth-forgot"
@@ -109,7 +121,7 @@ const AuthPage = ({ setUser }) => {
           </p>
         )}
 
-        {/* 🔙 BACK */}
+        {/* BACK */}
         {isForgot && (
           <p
             className="auth-back"
