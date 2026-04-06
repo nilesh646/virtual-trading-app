@@ -2,14 +2,8 @@ import { useState } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-// import { useEffect } from "react";
 
-// useEffect(() => {
-//   const token = localStorage.getItem("token");
-//   if (token) {
-//     setUser({}); // simple restore
-//   }
-// }, []);
+
 
 const AuthPage = ({ setUser }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,6 +12,7 @@ const AuthPage = ({ setUser }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
 
   const handleSubmit = async () => {
     try {
@@ -52,6 +47,8 @@ const AuthPage = ({ setUser }) => {
       toast.error(err.response?.data?.error || "Something went wrong");
     }
   };
+
+  
 
   return (
     <div className="auth-container">
