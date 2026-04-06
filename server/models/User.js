@@ -1,62 +1,92 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  balance: {
-    type: Number,
-    default: 100000
-  },
-  watchlist: {
-    type: [String],
-    default: []
-  },
-  holdings: [
-    {
-      symbol: String,
-      quantity: Number,
-      avgPrice: Number,
-      stopLoss: Number,     // NEW
-      takeProfit: Number    // NEW
-    }
-  ],
-  orders: [
-    {
-      symbol: String,
-      quantity: Number,
+const userSchema = new mongoose.Schema(
+  {
+    name: {
       type: String,
-      limitPrice: Number,
-      status: String
-    }
-  ],
-  tradeHistory: [
-    {
-      type: { type: String },
-      symbol: String,
-      quantity: Number,
-      price: Number,
-      pl: Number,
-      date: Date,
+      required: true,
+      trim: true
+    },
 
-      notes: { type: String, default: "" },
-      tags: { type: [String], default: [] },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true
+    },
 
-      // 🔥 NEW
-      emotion: { type: String, default: "" },
-      rating: { type: Number, default: 0 }
-    }
-  ]
-});
+    password: {
+      type: String,
+      required: true
+    },
+
+    /* ================= WALLET ================= */
+    balance: {
+      type: Number,
+      default: 100000
+    },
+
+    watchlist: {
+      type: [String],
+      default: []
+    },
+
+    /* ================= HOLDINGS ================= */
+    holdings: [
+      {
+        symbol: { type: String, required: true },
+        quantity: { type: Number, default: 0 },
+        avgPrice: { type: Number, default: 0 },
+
+        stopLoss: { type: Number, default: 0 },
+        takeProfit: { type: Number, default: 0 }
+      }
+    ],
+
+    /* ================= ORDERS ================= */
+    orders: [
+      {
+        symbol: String,
+        quantity: Number,
+        type: { type: String, enum: ["BUY", "SELL"] },
+
+        orderType: { type: String, enum: ["MARKET", "LIMIT"] },
+        limitPrice: Number,
+
+        status: {
+          type: String,
+          enum: ["PENDING", "EXECUTED", "CANCELLED"],
+          default: "PENDING"
+        },
+
+        date: { type: Date, default: Date.now }
+      }
+    ],
+
+    /* ================= TRADE HISTORY ================= */
+    tradeHistory: [
+      {
+        type: { type: String }, // BUY / SELL
+        symbol: String,
+        quantity: Number,
+        price: Number,
+        pl: Number,
+        date: { type: Date, default: Date.now },
+
+        // 🧾 Journal
+        notes: { type: String, default: "" },
+        tags: { type: [String], default: [] },
+
+        // 🧠 Behavior tracking
+        emotion: { type: String, default: "" },
+        rating: { type: Number, default: 0 }
+      }
+    ]
+  },
+  {
+    timestamps: true // 🔥 createdAt, updatedAt
+  }
+);
 
 module.exports = mongoose.model("User", userSchema);
