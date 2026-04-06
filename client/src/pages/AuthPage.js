@@ -1,6 +1,15 @@
 import { useState } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+// import { useEffect } from "react";
+
+// useEffect(() => {
+//   const token = localStorage.getItem("token");
+//   if (token) {
+//     setUser({}); // simple restore
+//   }
+// }, []);
 
 const AuthPage = ({ setUser }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,6 +17,7 @@ const AuthPage = ({ setUser }) => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
@@ -26,6 +36,9 @@ const AuthPage = ({ setUser }) => {
         localStorage.setItem("token", res.data.token);
         setUser(res.data.user);
         toast.success("Login successful");
+
+        // 🔥 REDIRECT
+        navigate("/dashboard");
       } else {
         await api.post("/api/auth/register", {
           email,
