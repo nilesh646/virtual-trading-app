@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap');
+
+.ac-root {
+  --bg1:     #0f0f1a;
+  --bg2:     #14141f;
+  --bg3:     #1a1a28;
+  --bg4:     #21213a;
+  --border:  #252535;
+  --text1:   #e8e8f0;
+  --text2:   #9090b0;
+  --text3:   #55557a;
+  --mono:    'DM Mono', monospace;
+  --sans:    'Outfit', sans-serif;
+
+  font-family: var(--sans);
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  color: var(--text1);
+}
+
+/* ── Empty ─────────────────────────── */
+.ac-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: var(--text3);
+  font-family: var(--sans);
+  font-size: 0.82rem;
+}
+
+/* ── Header ────────────────────────── */
+.ac-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.ac-title {
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text1);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.ac-total {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text2);
+}
+
+/* ── Body ──────────────────────────── */
+.ac-body {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── Donut ─────────────────────────── */
+.ac-chart-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+}
+
+.ac-center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+  text-align: center;
+}
+.ac-center-sym {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.ac-center-pct {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text1);
+  line-height: 1;
+}
+.ac-center-sub {
+  font-size: 0.62rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Legend ────────────────────────── */
+.ac-legend {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ac-legend-row {
+  display: grid;
+  grid-template-columns: 8px 44px 1fr 38px 70px;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ac-legend-sym {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text1);
+  letter-spacing: 0.03em;
+}
+
+.ac-legend-bar-wrap {
+  height: 4px;
+  background: var(--bg4);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.ac-legend-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+  opacity: 0.85;
+}
+
+.ac-legend-pct {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text2);
+  text-align: right;
+}
+
+.ac-legend-val {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text3);
+  text-align: right;
+}
