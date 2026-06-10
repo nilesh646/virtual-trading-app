@@ -430,3 +430,49 @@
     font-size: 1.4rem;
   }
 }
+
+/* ── OTP Boxes ─────────────────────────────── */
+.otp-boxes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+.otp-box {
+  width: 48px;
+  height: 56px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: 'DM Mono', 'JetBrains Mono', monospace;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  caret-color: transparent;
+}
+.otp-box:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.otp-box--filled {
+  border-color: var(--accent-soft);
+  background: #1e1e30;
+}
+
+.otp-resend {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+.otp-resend-link {
+  color: var(--accent-soft);
+  cursor: pointer;
+  font-weight: 600;
+  transition: color var(--transition);
+}
+.otp-resend-link:hover { color: #a5b4fc; text-decoration: underline; }
+.otp-resend-timer { color: var(--text-muted); }
