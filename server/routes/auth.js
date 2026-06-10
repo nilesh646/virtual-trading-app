@@ -12,13 +12,16 @@ const otpStore = new Map();
 
 // ── Nodemailer transporter using your .env SMTP config
 const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_SERVER,
-  port: Number(process.env.MAIL_PORT),
-  secure: false, // TLS via STARTTLS (port 587)
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.MAIL_USERNAME,
     pass: process.env.MAIL_PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 // Verify SMTP connection on server start (check terminal for result)
